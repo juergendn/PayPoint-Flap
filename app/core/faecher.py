@@ -15,6 +15,15 @@ from app.drivers.lock import SchlossRegistry
 
 log = logging.getLogger(__name__)
 
+# Anzeige der Fachzustände (Web und Display)
+ZUSTAND_TEXT = {
+    "frei": "frei",
+    "befuellung": "wird befüllt",
+    "belegt": "belegt",
+    "entnahme": "wird geleert",
+    "gestoert": "gestört",
+}
+
 # Kerong verlangt ≥ 1000 ms; 1500 ms gibt Reserve bei Spannungsabfall.
 IMPULS_MS_STANDARD = 1500
 

@@ -21,6 +21,7 @@ from app.web import auth as web_auth
 from app.web.admin import anmeldung, benutzer, chips, mitarbeiter
 from app.web.admin import routes as admin
 from app.web.display import routes as display
+from app.web.display.sitzung import DisplaySitzungen
 
 settings = get_settings()
 logging.basicConfig(
@@ -39,7 +40,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     modus = Bekleidung(schloesser, SessionFactory)
     ueberwachung = Tuerueberwachung(schloesser, SessionFactory, modus)
-    leser_dienst = LeserDienst(reader.erzeuge(settings), modus.chip)
+    display_sitzungen = DisplaySitzungen()
+
+    async def chip_verarbeiten(kennung: str) -> dict:
+        return await display_sitzungen.chip_meldung(await modus.chip(kennung))
+
+    leser_dienst = LeserDienst(reader.erzeuge(settings), chip_verarbeiten)
     ueberwachung.starten()
     leser_dienst.starten()
 
@@ -47,6 +53,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.modus = modus
     app.state.ueberwachung = ueberwachung
     app.state.leser_dienst = leser_dienst
+    app.state.display = display_sitzungen
     yield
     await leser_dienst.stoppen()
     await ueberwachung.stoppen()

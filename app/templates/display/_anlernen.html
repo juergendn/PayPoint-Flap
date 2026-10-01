@@ -1,0 +1,7 @@
+{% set zurueck = "/display/menue" %}
+{% include "display/_kopf.html" %}
+<div class="mitte" hx-get="/display/menue" hx-trigger="load delay:{{ sekunden }}s" hx-target="#bildschirm">
+  <div class="kiosk-symbol pulsieren">🏷️</div>
+  <div class="gross">Neuen Chip an den Leser halten</div>
+  <div class="mittel">{% if name %}für <strong>{{ name }}</strong>{% else %}ohne Zuordnung{% endif %} · {{ sekunden }} s</div>
+</div>

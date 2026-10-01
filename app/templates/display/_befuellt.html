@@ -1,0 +1,8 @@
+{% include "display/_kopf.html" %}
+<div class="mitte">
+  <div class="gross ok">✓ Fach <span class="brand-font">{{ nummer }}</span> ist belegt</div>
+  <div class="knopfreihe">
+    <button class="kbtn" hx-get="/display/menue" hx-target="#bildschirm">Menü</button>
+    <button class="kbtn kbtn-primaer" hx-get="/display/befuellen" hx-target="#bildschirm">Nächstes Fach befüllen</button>
+  </div>
+</div>

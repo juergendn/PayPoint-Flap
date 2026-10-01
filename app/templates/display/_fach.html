@@ -1,0 +1,23 @@
+{% set zurueck = "/display/faecher" %}
+{% include "display/_kopf.html" %}
+<div class="mitte">
+  <div class="gross">Fach <span class="brand-font">{{ fach.nummer }}</span></div>
+  <div class="mittel">
+    {{ zustand_text[fach.zustand] }}{% if fach.gesperrt %} · gesperrt{% endif %}
+    {% if zuweisung %}<br />für <strong>{{ zuweisung.mitarbeiter.name }}</strong>{% endif %}
+  </div>
+  <div class="knopfreihe">
+    {% if 'fach_oeffnen' in s.rechte %}
+    <button class="kbtn" hx-post="/display/fach/{{ fach.id }}/oeffnen" hx-target="#bildschirm" hx-disabled-elt="this">Öffnen</button>
+    {% endif %}
+    {% if 'fach_sperren' in s.rechte %}
+    <button class="kbtn" hx-post="/display/fach/{{ fach.id }}/{{ 'entsperren' if fach.gesperrt else 'sperren' }}" hx-target="#bildschirm">
+      {{ 'Entsperren' if fach.gesperrt else 'Sperren' }}
+    </button>
+    {% endif %}
+    {% if zuweisung and 'zuweisung_stornieren' in s.rechte %}
+    <button class="kbtn kbtn-gefahr" hx-post="/display/fach/{{ fach.id }}/stornieren" hx-target="#bildschirm"
+            hx-confirm="Zuweisung für {{ zuweisung.mitarbeiter.name }} stornieren?" hx-disabled-elt="this">Stornieren</button>
+    {% endif %}
+  </div>
+</div>

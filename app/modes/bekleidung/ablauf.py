@@ -363,6 +363,7 @@ class Bekleidung:
                 return {
                     "art": "menue",
                     "benutzer_id": benutzer.id,
+                    "rechte": sorted(benutzer.rechte),
                     "eigenes_fach": fach.nummer if fach else None,
                     **basis,
                 }

@@ -1,45 +1,9 @@
 {% extends "base.html" %}
+{% block titel %}Klappenautomat{% endblock %}
 {% block body_klasse %}kiosk{% endblock %}
 {% block body %}
-<main class="kiosk-start">
-  <h1 class="kiosk-titel">Klappenautomat</h1>
-  <div id="hinweis" class="kiosk-hinweis">Bitte Chip an den Leser halten</div>
-  <div id="meldung" class="kiosk-chip" hidden></div>
-</main>
-<script>
-  // Antwort des Automaten auf einen Chip, 6 s lang. Das vollständige Display
-  // (Menü für die Wäscheabteilung, Ziffernblock) folgt in Meilenstein 5.
-  (function () {
-    var hinweis = document.getElementById("hinweis");
-    var feld = document.getElementById("meldung");
-    var timer;
-    function text(m) {
-      var hallo = m.name ? "Hallo " + m.name + " – " : "";
-      switch (m.art) {
-        case "abholung": return ["ok", hallo + "Fach " + m.fach + " ist offen"];
-        case "kein_fach": return ["info", hallo + "für dich liegt nichts bereit"];
-        case "noch_nicht_bereit": return ["info", hallo + "Fach " + m.fach + " wird noch befüllt"];
-        case "fach_gesperrt": return ["fehler", hallo + "Fach " + m.fach + " ist gesperrt – bitte Wäscheabteilung"];
-        case "menue": return ["info", hallo + "Menü Wäscheabteilung folgt" + (m.eigenes_fach ? " · dein Fach: " + m.eigenes_fach : "")];
-        case "angelernt": return ["ok", "Chip " + m.kennung + " angelernt" + (m.name ? " für " + m.name : "")];
-        case "unbekannt": return ["fehler", "Chip unbekannt"];
-        case "nicht_zugeordnet": return ["fehler", "Chip noch keinem Mitarbeiter zugeordnet"];
-        case "gesperrt": return ["fehler", "Chip gesperrt"];
-        default: return ["fehler", hallo + (m.text || "Störung – bitte Wäscheabteilung")];
-      }
-    }
-    new EventSource("/events").addEventListener("chip", function (e) {
-      var t = text(JSON.parse(e.data));
-      feld.className = "kiosk-chip " + t[0];
-      feld.textContent = t[1];
-      feld.hidden = false;
-      hinweis.hidden = true;
-      clearTimeout(timer);
-      timer = setTimeout(function () {
-        feld.hidden = true;
-        hinweis.hidden = false;
-      }, 6000);
-    });
-  })();
-</script>
+<div id="bildschirm" class="bildschirm">{% include "display/_start.html" %}</div>
+<div id="overlay" class="overlay" hidden><div id="overlay-text" class="overlay-text"></div></div>
+<script>window.DISPLAY_TIMEOUT_S = {{ timeout_s }};</script>
+<script src="/static/js/display.js" defer></script>
 {% endblock %}

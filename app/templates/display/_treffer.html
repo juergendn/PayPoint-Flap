@@ -1,0 +1,19 @@
+{% for m in treffer %}
+  {% if zweck == 'befuellen' %}
+    {% if m.id in belegt %}
+    <button class="treffer-eintrag" disabled>
+      <span>{{ m.name }}</span><span class="text-muted">hat Fach {{ belegt[m.id] }}</span>
+    </button>
+    {% else %}
+    <button class="treffer-eintrag" hx-get="/display/befuellen/{{ m.id }}" hx-target="#bildschirm">
+      <span>{{ m.name }}</span><span class="text-muted">{{ m.personalnummer }}{% if m.abteilung %} · {{ m.abteilung }}{% endif %}</span>
+    </button>
+    {% endif %}
+  {% else %}
+    <button class="treffer-eintrag" hx-post="/display/anlernen" hx-vals='{"mitarbeiter_id": "{{ m.id }}"}' hx-target="#bildschirm">
+      <span>{{ m.name }}</span><span class="text-muted">{{ m.personalnummer }}</span>
+    </button>
+  {% endif %}
+{% else %}
+  <div class="text-muted treffer-leer">{{ 'Kein Treffer für „%s“' % q if q else 'Personalnummer tippen oder Name eingeben' }}</div>
+{% endfor %}

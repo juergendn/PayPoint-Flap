@@ -1,0 +1,23 @@
+{% include "display/_kopf.html" %}
+<div class="kacheln">
+  {% if 'fach_befuellen' in s.rechte %}
+  <button class="kachel" hx-get="/display/befuellen" hx-target="#bildschirm">
+    <span class="kachel-symbol">👕</span>Befüllen
+  </button>
+  {% endif %}
+  {% if 'fach_oeffnen' in s.rechte or 'fach_sperren' in s.rechte or 'zuweisung_stornieren' in s.rechte %}
+  <button class="kachel" hx-get="/display/faecher" hx-target="#bildschirm">
+    <span class="kachel-symbol">🗄️</span>Fächer
+  </button>
+  {% endif %}
+  {% if 'chip_anlernen' in s.rechte %}
+  <button class="kachel" hx-get="/display/befuellen?zweck=anlernen" hx-target="#bildschirm">
+    <span class="kachel-symbol">🏷️</span>Chip anlernen
+  </button>
+  {% endif %}
+  {% if eigenes_fach %}
+  <button class="kachel kachel-akzent" hx-post="/display/abholen" hx-target="#bildschirm">
+    <span class="kachel-symbol">📦</span>Mein Fach {{ eigenes_fach }}
+  </button>
+  {% endif %}
+</div>

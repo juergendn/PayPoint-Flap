@@ -1,0 +1,11 @@
+{% set zurueck = "/display/befuellen" %}
+{% include "display/_kopf.html" %}
+<div class="mitte">
+  <div class="gross">Fach <span class="brand-font">{{ fach_nummer }}</span></div>
+  <div class="mittel">für <strong>{{ ma.name }}</strong> ({{ ma.personalnummer }})</div>
+  <div class="knopfreihe">
+    <button class="kbtn" hx-get="/display/befuellen" hx-target="#bildschirm">Abbrechen</button>
+    <button class="kbtn kbtn-primaer" hx-post="/display/befuellen/{{ ma.id }}" hx-target="#bildschirm"
+            hx-disabled-elt="this">Fach öffnen</button>
+  </div>
+</div>

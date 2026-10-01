@@ -2,6 +2,32 @@
 
 Kurzprotokoll für die nächste Sitzung. Neueste Einträge oben.
 
+## 01.10.2026 – Meilenstein 5 (Display)
+
+**Fertig**
+- Display-Sitzung per Chip (`app/web/display/sitzung.py`): Chip eines Benutzers mit
+  `fach_befuellen` → Token per SSE ans Panel, Kopf `X-Display-Token` bei jeder
+  Aktion, Ablauf nach `display.timeout_s` (60 s) ohne Bedienung. Höchstens eine
+  Sitzung; ein anderer Chip beendet sie (außer beim Anlernen).
+- Bildschirme als HTMX-Fragmente (`templates/display/_*.html`): Start, Menü,
+  Befüllen (Suche: Ziffern → Personalnummer-Anfang, sonst Name; Ziffernblock +
+  QWERTZ mit Umlauten), Bestätigen (niedrigstes freies Fach), Warten auf Tür
+  (Polling, 204 = weiter warten) → „belegt“ → „Nächstes Fach befüllen“,
+  Fächerraster mit Öffnen/Sperren/Stornieren, Chip anlernen, Mein Fach.
+- Chip-Antworten als Overlay (6 s). `static/js/display.js`: Token, SSE,
+  Inaktivitäts-Timer mit Restanzeige, Bildschirmtastatur.
+- Dev-Seed: `waesche` = Clara Wolf (Chip 04A1B2C3D6) → Menü am Display.
+- 44 Tests; Durchlauf in Edge headless (1280×800) mit Screenshots, keine
+  Browserfehler.
+
+**Offen / später**
+- Bestätigungen am Display nutzen noch `hx-confirm` (Browser-Dialog) – im Kiosk
+  ggf. durch eigenen Dialog ersetzen.
+- Auflösung WP10A am Gerät prüfen (angenommen 1280×800).
+
+**Nächste Schritte**
+- Meilenstein 6: Webinterface – Protokoll (Filter, 60 Tage), Einstellungen.
+
 ## 01.10.2026 – Meilenstein 4 (Modus bekleidung)
 
 **Entschieden:** Fach ist erst frei, wenn die Tür nach der Abholung **wieder zu** ist.

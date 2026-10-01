@@ -1,0 +1,32 @@
+{% set zurueck = "/display/menue" %}
+{% include "display/_kopf.html" %}
+<div class="suche-layout">
+  <div class="suche-links">
+    <h2>{{ 'Befüllen – für wen?' if zweck == 'befuellen' else 'Chip anlernen – für wen?' }}</h2>
+    <input id="eingabe" class="eingabe" name="q" readonly placeholder="Nummer oder Name"
+           hx-get="/display/suche" hx-trigger="input changed delay:200ms"
+           hx-target="#treffer" hx-vals='{"zweck": "{{ zweck }}"}' />
+    <div class="umschalter">
+      <button class="kbtn kbtn-klein aktiv" data-tastatur="nummer">123</button>
+      <button class="kbtn kbtn-klein" data-tastatur="name">ABC</button>
+    </div>
+    <div class="tastatur tastatur-nummer" data-tastenfeld="nummer">
+      {% for t in "123456789" %}<button class="taste" data-taste="{{ t }}">{{ t }}</button>{% endfor %}
+      <button class="taste" data-taste="LEER">C</button>
+      <button class="taste" data-taste="0">0</button>
+      <button class="taste" data-taste="ZURUECK">⌫</button>
+    </div>
+    <div class="tastatur tastatur-name" data-tastenfeld="name" hidden>
+      {% for t in "QWERTZUIOPÜASDFGHJKLÖÄYXCVBNM" %}<button class="taste" data-taste="{{ t }}">{{ t }}</button>{% endfor %}
+      <button class="taste taste-breit" data-taste=" ">Leer</button>
+      <button class="taste" data-taste="LEER">C</button>
+      <button class="taste" data-taste="ZURUECK">⌫</button>
+    </div>
+    {% if zweck == 'anlernen' %}
+    <button class="kbtn" hx-post="/display/anlernen" hx-target="#bildschirm">Ohne Zuordnung anlernen</button>
+    {% endif %}
+  </div>
+  <div id="treffer" class="treffer">
+    <div class="text-muted treffer-leer">Personalnummer tippen oder Name eingeben</div>
+  </div>
+</div>

@@ -1,0 +1,4 @@
+{% if s %}{% include "display/_kopf.html" %}{% endif %}
+<div class="mitte" {% if weiter %}hx-get="{{ weiter }}" hx-trigger="load delay:3s, click" hx-target="#bildschirm"{% endif %}>
+  <div class="gross {{ art }}">{{ '✓' if art == 'ok' else '⚠️' }} {{ text }}</div>
+</div>

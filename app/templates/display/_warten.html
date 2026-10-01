@@ -1,0 +1,10 @@
+{% include "display/_kopf.html" %}
+<div class="mitte" hx-get="/display/fach/{{ fach_id }}/warten?zweck={{ zweck }}"
+     hx-trigger="every 1s" hx-target="#bildschirm">
+  <div class="gross">Fach <span class="brand-font">{{ nummer }}</span> ist offen</div>
+  <div class="mittel">
+    {% if zweck == 'befuellen' %}Kleidung für <strong>{{ name }}</strong> einlegen{% else %}Fach ausräumen{% endif %}
+    und Tür schließen
+  </div>
+  <div class="kiosk-symbol pulsieren">🚪</div>
+</div>

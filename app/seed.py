@@ -89,13 +89,21 @@ async def main() -> None:
             # Nur Entwicklung: feste Logins, damit man sich sofort anmelden kann.
             # Am Automaten gibt es keine Standardpasswörter – dort legt die
             # Ersteinrichtung (/admin/einrichten) den ersten Admin an.
+            # waesche = Clara Wolf (Wäscherei): ihr Chip öffnet am Display das Menü.
             rollen = {r.name: r.id for r in await session.scalars(select(Rolle))}
-            for login, rolle in (("admin", "admin"), ("waesche", "waesche")):
+            clara = await session.scalar(
+                select(Mitarbeiter.id).where(Mitarbeiter.personalnummer == "1003")
+            )
+            for login, rolle, ma in (
+                ("admin", "admin", None),
+                ("waesche", "waesche", clara),
+            ):
                 session.add(
                     Benutzer(
                         login=login,
                         passwort_hash=passwort_hash(login),
                         rolle_id=rollen[rolle],
+                        mitarbeiter_id=ma,
                         aktiv=True,
                     )
                 )

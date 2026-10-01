@@ -561,3 +561,326 @@ a.fach-nummer:hover {
   border: 1px solid var(--accent);
   color: var(--accent-text);
 }
+
+/* ---------- Kiosk-Display (Meilenstein 5) ----------
+   Ausgelegt auf tci WP10A (1280×800, Touch): Mindestgröße Bedienfläche 64 px,
+   keine Hover-Effekte, keine Textauswahl. */
+
+body.kiosk {
+  overflow: hidden;
+  font-size: 20px;
+  touch-action: manipulation;
+}
+.bildschirm {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.kiosk-symbol {
+  font-size: 5rem;
+}
+.pulsieren {
+  animation: pulsieren 1.6s ease-in-out infinite;
+}
+@keyframes pulsieren {
+  50% {
+    opacity: 0.35;
+  }
+}
+.kopf {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+.kopf-name {
+  font-size: 1.3rem;
+  flex: 1;
+}
+.kopf-aktionen {
+  display: flex;
+  gap: 10px;
+}
+.kbtn {
+  min-height: 72px;
+  padding: 0 28px;
+  font-size: 1.2rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.kbtn:active,
+.kachel:active,
+.taste:active,
+.treffer-eintrag:active,
+.fachkachel:active {
+  background: var(--border);
+}
+.kbtn:disabled {
+  opacity: 0.5;
+}
+.kbtn-klein {
+  min-height: 56px;
+  font-size: 1rem;
+  padding: 0 18px;
+}
+.kbtn.aktiv {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.kbtn-primaer {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.kbtn-gefahr {
+  color: var(--error-text);
+  border-color: var(--error);
+}
+.kacheln {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  padding: 32px;
+  align-content: center;
+}
+.kachel {
+  min-height: 200px;
+  font-size: 1.6rem;
+  font-family: "Audiowide", sans-serif;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.kachel-symbol {
+  font-size: 3.5rem;
+}
+.kachel-akzent {
+  border-color: var(--success);
+  background: rgba(63, 185, 80, 0.12);
+}
+.mitte {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  text-align: center;
+  padding: 24px;
+}
+.gross {
+  font-size: 2.4rem;
+}
+.mittel {
+  font-size: 1.5rem;
+  color: var(--muted);
+}
+.gross.ok {
+  color: var(--success-text);
+}
+.gross.fehler {
+  color: var(--error-text);
+}
+.knopfreihe {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Suche mit Bildschirmtastatur */
+.suche-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 20px;
+  min-height: 0;
+}
+.suche-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.suche-links h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+.eingabe {
+  font-size: 1.8rem;
+  padding: 14px;
+  text-align: center;
+}
+.umschalter {
+  display: flex;
+  gap: 10px;
+}
+.tastatur {
+  display: grid;
+  gap: 8px;
+}
+.tastatur-nummer {
+  grid-template-columns: repeat(3, 1fr);
+}
+.tastatur-name {
+  grid-template-columns: repeat(10, 1fr);
+}
+.tastatur[hidden] {
+  display: none;
+}
+.taste {
+  min-height: 64px;
+  font-size: 1.5rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.tastatur-name .taste {
+  min-height: 56px;
+  font-size: 1.2rem;
+}
+.taste-breit {
+  grid-column: span 6;
+}
+.treffer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+.treffer-eintrag {
+  min-height: 72px;
+  padding: 10px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+.treffer-eintrag span.text-muted {
+  font-size: 0.95rem;
+}
+.treffer-eintrag:disabled {
+  opacity: 0.45;
+}
+.treffer-leer {
+  padding: 20px;
+}
+
+/* Fachraster am Display */
+.fachraster {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 16px;
+  overflow-y: auto;
+  align-content: start;
+}
+.fachkachel {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.fachkachel-nr {
+  font-size: 2rem;
+}
+.fachkachel-text {
+  font-size: 0.9rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 6px;
+}
+
+/* Meldung über allem (Chip-Antworten) */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.overlay[hidden] {
+  display: none;
+}
+.overlay-text {
+  max-width: 80%;
+  font-size: 2.4rem;
+  padding: 40px 56px;
+  border-radius: 16px;
+  text-align: center;
+  white-space: pre-line;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+.overlay-text.ok {
+  background: rgba(22, 60, 30, 0.95);
+  border-color: var(--success);
+  color: var(--success-text);
+}
+.overlay-text.info {
+  background: rgba(14, 40, 80, 0.95);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.overlay-text.fehler {
+  background: rgba(80, 20, 20, 0.95);
+  border-color: var(--error);
+  color: var(--error-text);
+}
+[data-theme="light"] .overlay-text.ok,
+[data-theme="light"] .overlay-text.info,
+[data-theme="light"] .overlay-text.fehler {
+  background: var(--panel);
+}
+.fachkachel.zustand-belegt {
+  border-color: var(--accent);
+  background: rgba(31, 111, 235, 0.12);
+}
+.fachkachel.zustand-befuellung,
+.fachkachel.zustand-entnahme {
+  border-color: var(--warning);
+}
+.fachkachel.zustand-gestoert,
+.fachkachel.fach-gesperrt,
+.fachkachel.fach-gestoert {
+  border-color: var(--error);
+}

@@ -1,0 +1,13 @@
+{% set zurueck = "/display/menue" %}
+{% include "display/_kopf.html" %}
+<div class="fachraster">
+  {% for f in faecher %}
+  {% set st = status.get(f.id, '') %}
+  <button class="fachkachel zustand-{{ f.zustand }}{{ ' fach-gesperrt' if f.gesperrt }}{{ ' fach-gestoert' if st == 'gestoert' }}"
+          hx-get="/display/fach/{{ f.id }}" hx-target="#bildschirm">
+    <span class="brand-font fachkachel-nr">{{ f.nummer }}</span>
+    <span class="fachkachel-text">{{ '🚫 ' if f.gesperrt }}{{ zustand_text[f.zustand] }}</span>
+    <span class="fachkachel-text text-muted">{{ namen.get(f.id, '') }}</span>
+  </button>
+  {% endfor %}
+</div>

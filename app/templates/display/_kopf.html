@@ -1,0 +1,10 @@
+<header class="kopf">
+  <div class="kopf-name">👤 {{ s.name }}</div>
+  <div class="kopf-rest text-muted"><span id="rest"></span></div>
+  <div class="kopf-aktionen">
+    {% if zurueck is defined %}
+    <button class="kbtn kbtn-klein" hx-get="{{ zurueck }}" hx-target="#bildschirm">← Zurück</button>
+    {% endif %}
+    <button class="kbtn kbtn-klein" hx-post="/display/ende" hx-target="#bildschirm">Beenden</button>
+  </div>
+</header>

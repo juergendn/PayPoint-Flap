@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.core import faecher
+from app.core.faecher import ZUSTAND_TEXT
 from app.db.models import Benutzer, Ereignis, Fach, Mitarbeiter, Zuweisung
 from app.modes.bekleidung.ablauf import AblaufFehler, offene_zuweisung
 from app.web.admin.hilfe import Session, seite, weiter
@@ -19,14 +20,6 @@ from app.web.auth import aktueller_benutzer, recht
 
 router = APIRouter()
 Angemeldet = Annotated[Benutzer, Depends(aktueller_benutzer)]
-
-ZUSTAND_TEXT = {
-    "frei": "frei",
-    "befuellung": "wird befüllt",
-    "belegt": "belegt",
-    "entnahme": "wird geleert",
-    "gestoert": "gestört",
-}
 
 
 async def _belegung(session) -> dict[int, str]:
