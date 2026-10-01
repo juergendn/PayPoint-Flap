@@ -1,0 +1,40 @@
+{% extends "admin/layout.html" %}
+{% block seitentitel %}{{ 'Benutzer ' ~ b.login if b else 'Neuer Benutzer' }}{% endblock %}
+{% block inhalt %}
+<div class="card schmal">
+  <form method="post" action="{{ '/admin/benutzer/%d' % b.id if b else '/admin/benutzer/neu' }}">
+    {% if not b %}
+    <div class="form-group">
+      <label for="login">Login</label>
+      <input id="login" name="login" required maxlength="50" value="{{ werte.login or '' }}" />
+    </div>
+    {% endif %}
+    {% set rolle_id = b.rolle_id if b else (werte.rolle_id or 2) %}
+    <div class="form-group">
+      <label for="rolle_id">Rolle</label>
+      <select id="rolle_id" name="rolle_id">
+        {% for r in rollen %}<option value="{{ r.id }}" {{ 'selected' if r.id == rolle_id }}>{{ r.bezeichnung }}</option>{% endfor %}
+      </select>
+    </div>
+    {% set ma_id = b.mitarbeiter_id if b else (werte.mitarbeiter_id|int if werte.mitarbeiter_id else none) %}
+    <div class="form-group">
+      <label for="mitarbeiter_id">Mitarbeiter (für Bedienung am Display per Chip)</label>
+      <select id="mitarbeiter_id" name="mitarbeiter_id">
+        <option value="">– keiner –</option>
+        {% for m in mitarbeiter %}<option value="{{ m.id }}" {{ 'selected' if m.id == ma_id }}>{{ m.name }} ({{ m.personalnummer }})</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="passwort">{{ 'Neues Passwort (leer = unverändert)' if b else 'Passwort (leer = kein Web-Login)' }}</label>
+      <input id="passwort" name="passwort" type="password" autocomplete="new-password" minlength="8" />
+    </div>
+    {% if b %}
+    <label class="checkbox"><input type="checkbox" name="aktiv" value="true" {{ 'checked' if b.aktiv }} /> aktiv</label>
+    {% endif %}
+    <div class="aktionen">
+      <a class="btn btn-secondary" href="/admin/benutzer">Zurück</a>
+      <button class="btn btn-primary">Speichern</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

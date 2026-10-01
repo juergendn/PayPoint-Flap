@@ -15,6 +15,8 @@ from app.db.session import SessionFactory, engine
 from app.drivers import reader
 from app.drivers.lock import SchlossRegistry
 from app.services.leser import LeserDienst
+from app.web import auth as web_auth
+from app.web.admin import anmeldung, benutzer, chips, mitarbeiter
 from app.web.admin import routes as admin
 from app.web.display import routes as display
 
@@ -50,5 +52,8 @@ app.mount(
     StaticFiles(directory=Path(__file__).parent / "static"),
     name="static",
 )
+app.add_middleware(web_auth.SitzungsMiddleware)
+app.add_exception_handler(web_auth.NichtAngemeldet, web_auth.nicht_angemeldet_behandeln)
 app.include_router(display.router)
-app.include_router(admin.router, prefix="/admin")
+for teil in (anmeldung, admin, mitarbeiter, chips, benutzer):
+    app.include_router(teil.router, prefix="/admin")

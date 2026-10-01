@@ -81,6 +81,8 @@ class LeserDienst:
                 .options(selectinload(Chip.mitarbeiter))
             )
             mitarbeiter = chip.mitarbeiter if chip and chip.aktiv else None
+            if mitarbeiter and not mitarbeiter.aktiv:
+                mitarbeiter = None
             protokollieren(
                 session,
                 "chip_gelesen",

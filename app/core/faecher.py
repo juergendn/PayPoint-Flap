@@ -50,7 +50,11 @@ async def schloss_status_alle(
 
 
 async def oeffnen(
-    session: AsyncSession, registry: SchlossRegistry, fach: Fach, quelle: str
+    session: AsyncSession,
+    registry: SchlossRegistry,
+    fach: Fach,
+    quelle: str,
+    benutzer_id: int | None = None,
 ) -> bool:
     """Öffnet das Fach und protokolliert das Ergebnis. True bei Erfolg."""
     if fach.io_modul_id is None or fach.kanal is None:
@@ -63,10 +67,21 @@ async def oeffnen(
     except HardwareFehler as e:
         log.error("Fach %d öffnen fehlgeschlagen: %s", fach.nummer, e)
         protokollieren(
-            session, "stoerung", fach_id=fach.id, quelle=quelle, fehler=str(e)
+            session,
+            "stoerung",
+            fach_id=fach.id,
+            benutzer_id=benutzer_id,
+            quelle=quelle,
+            fehler=str(e),
         )
         await session.commit()
         return False
-    protokollieren(session, "fach_geoeffnet", fach_id=fach.id, quelle=quelle)
+    protokollieren(
+        session,
+        "fach_geoeffnet",
+        fach_id=fach.id,
+        benutzer_id=benutzer_id,
+        quelle=quelle,
+    )
     await session.commit()
     return True

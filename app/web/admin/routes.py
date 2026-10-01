@@ -1,7 +1,4 @@
-"""Webinterface – Entwicklungsstand: Fachübersicht mit Testöffnung.
-
-ACHTUNG: noch ohne Login (kommt in Meilenstein 3). Nur im isolierten Netz betreiben.
-"""
+"""Webinterface: Fachübersicht mit manueller Öffnung."""
 
 from typing import Annotated
 
@@ -11,12 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core import faecher
-from app.db.models import Fach
-from app.db.session import get_session
-from app.web import templates
+from app.db.models import Benutzer, Fach
+from app.web.admin.hilfe import Session, seite
+from app.web.auth import aktueller_benutzer, recht
 
 router = APIRouter()
-Session = Annotated[AsyncSession, Depends(get_session)]
+Angemeldet = Annotated[Benutzer, Depends(aktueller_benutzer)]
 
 
 async def _faecher_kontext(request: Request, session: AsyncSession) -> dict:
@@ -28,27 +25,34 @@ async def _faecher_kontext(request: Request, session: AsyncSession) -> dict:
 
 
 @router.get("", response_class=HTMLResponse)
-async def uebersicht(request: Request, session: Session):
+async def uebersicht(request: Request, session: Session, _: Angemeldet):
     kontext = await _faecher_kontext(request, session)
-    return templates.TemplateResponse(request, "admin/uebersicht.html", kontext)
+    return seite(request, "admin/uebersicht.html", aktiv="uebersicht", **kontext)
 
 
 @router.get("/faecher", response_class=HTMLResponse)
-async def faecher_teil(request: Request, session: Session):
+async def faecher_teil(request: Request, session: Session, _: Angemeldet):
     kontext = await _faecher_kontext(request, session)
-    return templates.TemplateResponse(request, "admin/_faecher.html", kontext)
+    return seite(request, "admin/_faecher.html", **kontext)
 
 
 @router.post("/fach/{fach_id}/oeffnen", response_class=HTMLResponse)
-async def fach_oeffnen(fach_id: int, request: Request, session: Session):
+async def fach_oeffnen(
+    fach_id: int,
+    request: Request,
+    session: Session,
+    benutzer: Annotated[Benutzer, Depends(recht("fach_oeffnen"))],
+):
     fach = await session.get(Fach, fach_id, options=[selectinload(Fach.io_modul)])
     if fach is None:
         raise HTTPException(404, "Fach unbekannt")
-    ok = await faecher.oeffnen(session, request.app.state.schloesser, fach, "admin")
+    ok = await faecher.oeffnen(
+        session, request.app.state.schloesser, fach, "admin", benutzer.id
+    )
     kontext = await _faecher_kontext(request, session)
     kontext["meldung"] = (
         ("success", f"Fach {fach.nummer} geöffnet")
         if ok
         else ("error", f"Fach {fach.nummer}: Schloss/Modul antwortet nicht")
     )
-    return templates.TemplateResponse(request, "admin/_faecher.html", kontext)
+    return seite(request, "admin/_faecher.html", **kontext)

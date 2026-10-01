@@ -21,9 +21,11 @@
     </div>
     {% if fach.io_modul %}
     <div class="text-muted fach-io">{{ fach.io_modul.name }} · K{{ fach.kanal }}</div>
+    {% if 'fach_oeffnen' in rechte %}
     <button class="btn btn-outline-primary btn-sm"
             hx-post="/admin/fach/{{ fach.id }}/oeffnen" hx-target="#faecher"
             hx-disabled-elt="this">Öffnen</button>
+    {% endif %}
     {% endif %}
   </div>
   {% endfor %}

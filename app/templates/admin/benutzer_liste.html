@@ -1,0 +1,24 @@
+{% extends "admin/layout.html" %}
+{% block seitentitel %}Benutzer{% endblock %}
+{% block inhalt %}
+<div class="card">
+  <div class="werkzeugleiste">
+    <p class="text-muted">Benutzer melden sich im Webinterface an. Mit verknüpftem Mitarbeiter gilt die Rolle auch am Display (per Chip).</p>
+    <a class="btn btn-primary" href="/admin/benutzer/neu">Neu</a>
+  </div>
+  <table>
+    <thead><tr><th>Login</th><th>Rolle</th><th>Mitarbeiter</th><th>Web-Login</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for b in liste %}
+      <tr class="klickbar" onclick="location.href='/admin/benutzer/{{ b.id }}'">
+        <td><a href="/admin/benutzer/{{ b.id }}">{{ b.login }}</a></td>
+        <td>{{ b.rolle.bezeichnung }}</td>
+        <td>{{ b.mitarbeiter.name if b.mitarbeiter else '' }}</td>
+        <td>{{ 'ja' if b.passwort_hash else 'nur Chip' }}</td>
+        <td>{% if b.aktiv %}<span class="badge badge-success">aktiv</span>{% else %}<span class="badge badge-error">inaktiv</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

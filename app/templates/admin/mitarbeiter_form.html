@@ -1,0 +1,76 @@
+{% extends "admin/layout.html" %}
+{% block seitentitel %}{{ m.name if m else 'Neuer Mitarbeiter' }}{% endblock %}
+{% block inhalt %}
+<div class="dashboard-grid">
+  <div class="card">
+    <h3>Stammdaten</h3>
+    <form method="post" action="{{ '/admin/mitarbeiter/%d' % m.id if m else '/admin/mitarbeiter/neu' }}">
+      <div class="form-group">
+        <label for="personalnummer">Personalnummer</label>
+        <input id="personalnummer" name="personalnummer" required maxlength="30"
+               value="{{ werte.personalnummer if werte.personalnummer is defined else (m.personalnummer if m else '') }}" />
+      </div>
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input id="name" name="name" required maxlength="100"
+               value="{{ werte.name if werte.name is defined else (m.name if m else '') }}" />
+      </div>
+      <div class="form-group">
+        <label for="email">E-Mail (für Benachrichtigung bei Befüllung)</label>
+        <input id="email" name="email" type="email" maxlength="200"
+               value="{{ werte.email or '' if werte.email is defined else (m.email or '' if m else '') }}" />
+      </div>
+      <div class="form-group">
+        <label for="abteilung">Abteilung</label>
+        <input id="abteilung" name="abteilung" maxlength="100"
+               value="{{ werte.abteilung or '' if werte.abteilung is defined else (m.abteilung or '' if m else '') }}" />
+      </div>
+      {% if m %}
+      <label class="checkbox"><input type="checkbox" name="aktiv" value="true" {{ 'checked' if m.aktiv }} /> aktiv</label>
+      {% endif %}
+      <div class="aktionen">
+        <a class="btn btn-secondary" href="/admin/mitarbeiter">Zurück</a>
+        <button class="btn btn-primary">Speichern</button>
+      </div>
+    </form>
+  </div>
+
+  {% if m %}
+  <div class="card">
+    <h3>Chips</h3>
+    {% if 'chip_verknuepfen' in rechte %}
+    <table>
+      <thead><tr><th>Kennung</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for c in m.chips %}
+        <tr>
+          <td><code>{{ c.kennung }}</code></td>
+          <td>{% if c.aktiv %}<span class="badge badge-success">aktiv</span>{% else %}<span class="badge badge-error">gesperrt</span>{% endif %}</td>
+          <td class="rechts">
+            <form method="post" action="/admin/chips/{{ c.id }}/aktiv" class="inline">
+              <input type="hidden" name="zurueck" value="/admin/mitarbeiter/{{ m.id }}" />
+              <button class="btn btn-outline-warning btn-sm">{{ 'Sperren' if c.aktiv else 'Freigeben' }}</button>
+            </form>
+            <form method="post" action="/admin/chips/{{ c.id }}/zuordnen" class="inline">
+              <input type="hidden" name="zurueck" value="/admin/mitarbeiter/{{ m.id }}" />
+              <button class="btn btn-outline-danger btn-sm">Lösen</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="text-muted">Kein Chip zugeordnet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <form method="post" action="/admin/chips" class="zeile mt-4">
+      <input type="hidden" name="mitarbeiter_id" value="{{ m.id }}" />
+      <input type="hidden" name="zurueck" value="/admin/mitarbeiter/{{ m.id }}" />
+      <input name="kennung" placeholder="Kennung (Hex), z. B. 04A1B2C3D4" required />
+      <button class="btn btn-outline-primary">Chip hinzufügen</button>
+    </form>
+    <p class="text-muted">Unbekannte Chips am Automaten anlernen und unter „Chips“ zuordnen.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

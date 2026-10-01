@@ -1,0 +1,58 @@
+{% extends "admin/layout.html" %}
+{% block seitentitel %}Mitarbeiter-Import{% endblock %}
+{% block inhalt %}
+<div class="card">
+  <h3>CSV-Datei</h3>
+  <p class="text-muted">
+    Kopfzeile mit <code>personalnummer;name;email;abteilung</code> (Reihenfolge egal,
+    E-Mail und Abteilung optional). Trennzeichen <code>;</code> oder <code>,</code>,
+    UTF-8 oder Excel-Standard (Windows-1252). Abgleich über die Personalnummer.
+  </p>
+  <form method="post" action="/admin/mitarbeiter/import" enctype="multipart/form-data" class="zeile">
+    <input type="file" name="datei" accept=".csv,text/csv" required />
+    <button class="btn btn-primary">Prüfen</button>
+  </form>
+</div>
+
+{% if ergebnis %}
+<div class="card">
+  <h3>Vorschau</h3>
+  <p>
+    <span class="badge badge-success">{{ ergebnis.zeilen|length }} gültige Zeilen</span>
+    <span class="badge badge-success">{{ neu }} neu</span>
+    <span class="badge badge-warning">{{ bekannt }} vorhanden (werden aktualisiert)</span>
+    {% if ergebnis.fehler %}<span class="badge badge-error">{{ ergebnis.fehler|length }} Fehler</span>{% endif %}
+  </p>
+  {% if ergebnis.fehler %}
+  <div class="alert alert-error">
+    {% for f in ergebnis.fehler[:20] %}{{ f }}<br />{% endfor %}
+    {% if ergebnis.fehler|length > 20 %}… und {{ ergebnis.fehler|length - 20 }} weitere{% endif %}
+  </div>
+  {% endif %}
+  {% if ergebnis.zeilen %}
+  <div class="table-responsive vorschau">
+    <table>
+      <thead><tr><th>Pers.-Nr.</th><th>Name</th><th>E-Mail</th><th>Abteilung</th></tr></thead>
+      <tbody>
+        {% for z in ergebnis.zeilen[:15] %}
+        <tr><td>{{ z.personalnummer }}</td><td>{{ z.name }}</td><td>{{ z.email or '' }}</td><td>{{ z.abteilung or '' }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if ergebnis.zeilen|length > 15 %}<p class="text-muted">… {{ ergebnis.zeilen|length - 15 }} weitere</p>{% endif %}
+  </div>
+  <form method="post" action="/admin/mitarbeiter/import/anwenden" class="mt-4">
+    <input type="hidden" name="daten_b64" value="{{ daten_b64 }}" />
+    <label class="checkbox">
+      <input type="checkbox" name="fehlende_deaktivieren" value="true" />
+      {{ fehlen }} Mitarbeiter, die nicht in der Datei stehen, deaktivieren (nicht löschen)
+    </label>
+    <div class="aktionen">
+      <a class="btn btn-secondary" href="/admin/mitarbeiter">Abbrechen</a>
+      <button class="btn btn-primary">Import ausführen</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

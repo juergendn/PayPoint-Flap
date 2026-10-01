@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block body %}
+<button type="button" class="theme-toggle btn btn-secondary btn-sm theme-toggle-fest"></button>
+<main class="anmeldung">
+  <div class="card anmeldung-karte">
+    <h2 class="brand-font"><span class="status-dot"></span> MVT-Klappenautomat</h2>
+    {% if fehler %}<div class="alert alert-error">{{ fehler }}</div>{% endif %}
+    {% if hinweis %}<div class="alert alert-success">{{ hinweis }}</div>{% endif %}
+    {% block formular %}{% endblock %}
+  </div>
+</main>
+<script src="/static/js/app.js"></script>
+{% endblock %}

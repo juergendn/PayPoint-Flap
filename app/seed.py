@@ -10,7 +10,8 @@ import asyncio
 from sqlalchemy import select, text
 
 from app.config import get_settings
-from app.db.models import Automat, Chip, Fach, IoModul, Mitarbeiter
+from app.core.auth import passwort_hash
+from app.db.models import Automat, Benutzer, Chip, Fach, IoModul, Mitarbeiter, Rolle
 from app.db.session import SessionFactory, engine
 
 # Fachbelegung (siehe CLAUDE.md): (erstes Fach, Anzahl) je Modul.
@@ -83,6 +84,21 @@ async def main() -> None:
             session.add(
                 Chip(kennung=kennung, technologie="MIFARE", mitarbeiter_id=ma.id)
             )
+
+        if settings.seed_testdaten:
+            # Nur Entwicklung: feste Logins, damit man sich sofort anmelden kann.
+            # Am Automaten gibt es keine Standardpasswörter – dort legt die
+            # Ersteinrichtung (/admin/einrichten) den ersten Admin an.
+            rollen = {r.name: r.id for r in await session.scalars(select(Rolle))}
+            for login, rolle in (("admin", "admin"), ("waesche", "waesche")):
+                session.add(
+                    Benutzer(
+                        login=login,
+                        passwort_hash=passwort_hash(login),
+                        rolle_id=rollen[rolle],
+                        aktiv=True,
+                    )
+                )
 
         await session.commit()
         print(

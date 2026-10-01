@@ -92,6 +92,10 @@ class Mitarbeiter(Base):
     abteilung: Mapped[str | None] = mapped_column(String(100))
     aktiv: Mapped[bool] = mapped_column(Boolean, default=True)
 
+    chips: Mapped[list["Chip"]] = relationship(
+        back_populates="mitarbeiter", order_by="Chip.id"
+    )
+
 
 class Chip(Base):
     __tablename__ = "chip"
@@ -108,7 +112,7 @@ class Chip(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    mitarbeiter: Mapped[Mitarbeiter | None] = relationship()
+    mitarbeiter: Mapped[Mitarbeiter | None] = relationship(back_populates="chips")
 
 
 rolle_recht = Table(
@@ -150,6 +154,12 @@ class Benutzer(Base):
     aktiv: Mapped[bool] = mapped_column(Boolean, default=True)
 
     rolle: Mapped[Rolle] = relationship()
+    mitarbeiter: Mapped[Mitarbeiter | None] = relationship()
+
+    @property
+    def rechte(self) -> set[str]:
+        """Rechte-Schlüssel der Rolle; setzt geladene `rolle.rechte` voraus."""
+        return {r.schluessel for r in self.rolle.rechte}
 
 
 class Zuweisung(Base):
@@ -205,6 +215,10 @@ class Ereignis(Base):
     )
     mitarbeiter_id: Mapped[int | None] = mapped_column(
         ForeignKey("mitarbeiter.id", ondelete="SET NULL")
+    )
+    # Wer im Webinterface/am Display gehandelt hat (Nachvollziehbarkeit).
+    benutzer_id: Mapped[int | None] = mapped_column(
+        ForeignKey("benutzer.id", ondelete="SET NULL")
     )
     details: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 

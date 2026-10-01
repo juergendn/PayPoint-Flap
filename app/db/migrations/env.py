@@ -1,6 +1,7 @@
 """Alembic-Umgebung (asynchron), URL aus app.config."""
 
 import asyncio
+from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -9,6 +10,11 @@ from app.config import get_settings
 from app.db.models import Base
 
 target_metadata = Base.metadata
+
+# Migrationsschritte ins Log (im Container: /data/mvt/logs/app.log), ohne die
+# Logger der laufenden Anwendung/Tests abzuschalten.
+if context.config.config_file_name:
+    fileConfig(context.config.config_file_name, disable_existing_loggers=False)
 
 
 def _migrieren(connection) -> None:

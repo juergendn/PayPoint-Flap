@@ -15,6 +15,7 @@ def protokollieren(
     fach_id: int | None = None,
     chip_id: int | None = None,
     mitarbeiter_id: int | None = None,
+    benutzer_id: int | None = None,
     **details: Any,
 ) -> Ereignis:
     """Fügt ein Ereignis zur Sitzung hinzu; Commit macht der Aufrufer, damit das
@@ -25,6 +26,7 @@ def protokollieren(
         fach_id=fach_id,
         chip_id=chip_id,
         mitarbeiter_id=mitarbeiter_id,
+        benutzer_id=benutzer_id,
         details=details or None,
     )
     session.add(ereignis)

@@ -1,0 +1,59 @@
+{% extends "admin/layout.html" %}
+{% block seitentitel %}Chips{% endblock %}
+{% block inhalt %}
+<div class="card">
+  <div class="werkzeugleiste">
+    <form method="get" class="suche">
+      <input name="q" value="{{ q }}" placeholder="Kennung oder Name" />
+      <select name="filter" onchange="this.form.submit()">
+        <option value="alle" {{ 'selected' if filter == 'alle' }}>alle</option>
+        <option value="frei" {{ 'selected' if filter == 'frei' }}>nicht zugeordnet</option>
+      </select>
+      <button class="btn btn-secondary">Suchen</button>
+    </form>
+    <form method="post" action="/admin/chips" class="zeile">
+      <input name="kennung" placeholder="Neue Kennung (Hex)" required />
+      <button class="btn btn-primary">Anlegen</button>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table>
+      <thead><tr><th>Kennung</th><th>Mitarbeiter</th><th>Status</th><th>Erfasst</th><th></th></tr></thead>
+      <tbody>
+        {% for c in chips %}
+        <tr>
+          <td><code>{{ c.kennung }}</code></td>
+          <td>
+            <form method="post" action="/admin/chips/{{ c.id }}/zuordnen" class="zeile">
+              <select name="mitarbeiter_id" onchange="this.form.submit()">
+                <option value="">– nicht zugeordnet –</option>
+                {% for m in mitarbeiter %}
+                <option value="{{ m.id }}" {{ 'selected' if m.id == c.mitarbeiter_id }}>{{ m.name }} ({{ m.personalnummer }})</option>
+                {% endfor %}
+                {% if c.mitarbeiter and not c.mitarbeiter.aktiv %}
+                <option value="{{ c.mitarbeiter_id }}" selected>{{ c.mitarbeiter.name }} (inaktiv)</option>
+                {% endif %}
+              </select>
+              <noscript><button class="btn btn-secondary btn-sm">OK</button></noscript>
+            </form>
+          </td>
+          <td>{% if c.aktiv %}<span class="badge badge-success">aktiv</span>{% else %}<span class="badge badge-error">gesperrt</span>{% endif %}</td>
+          <td class="text-muted">{{ c.angelegt_am.astimezone().strftime('%d.%m.%Y %H:%M') }}</td>
+          <td class="rechts">
+            <form method="post" action="/admin/chips/{{ c.id }}/aktiv" class="inline">
+              <button class="btn btn-outline-warning btn-sm">{{ 'Sperren' if c.aktiv else 'Freigeben' }}</button>
+            </form>
+            <form method="post" action="/admin/chips/{{ c.id }}/loeschen" class="inline"
+                  onsubmit="return confirm('Chip {{ c.kennung }} löschen?')">
+              <button class="btn btn-outline-danger btn-sm">Löschen</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-muted">Keine Chips</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

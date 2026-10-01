@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titel %}{% block seitentitel %}{% endblock %} – MVT-Klappenautomat{% endblock %}
+{% block body %}
+<header class="topbar">
+  <a href="/admin" class="brand brand-font"><span class="status-dot"></span> MVT-Klappenautomat</a>
+  <div class="page-title brand-font">{{ self.seitentitel() }}</div>
+  <div class="user-menu">
+    <button type="button" class="theme-toggle btn btn-secondary btn-sm"></button>
+    <span class="text-muted">{{ kopf.login }} · {{ kopf.rolle }}</span>
+    <form method="post" action="/admin/logout">
+      <button class="btn btn-secondary btn-sm">Abmelden</button>
+    </form>
+  </div>
+</header>
+<div class="app-container">
+  <nav class="sidebar">
+    <a class="nav-link {{ 'active' if aktiv == 'uebersicht' }}" href="/admin"><span class="nav-icon">📊</span> Übersicht</a>
+    {% if 'mitarbeiter_verwalten' in rechte or 'chip_verknuepfen' in rechte %}
+    <div class="nav-group-header">Stammdaten</div>
+    {% if 'mitarbeiter_verwalten' in rechte %}
+    <a class="nav-link {{ 'active' if aktiv == 'mitarbeiter' }}" href="/admin/mitarbeiter"><span class="nav-icon">👥</span> Mitarbeiter</a>
+    {% endif %}
+    {% if 'chip_verknuepfen' in rechte %}
+    <a class="nav-link {{ 'active' if aktiv == 'chips' }}" href="/admin/chips"><span class="nav-icon">🏷️</span> Chips</a>
+    {% endif %}
+    {% endif %}
+    {% if 'benutzer_verwalten' in rechte %}
+    <div class="nav-group-header">System</div>
+    <a class="nav-link {{ 'active' if aktiv == 'benutzer' }}" href="/admin/benutzer"><span class="nav-icon">🔑</span> Benutzer</a>
+    {% endif %}
+  </nav>
+  <main class="content">
+    {% if hinweis %}<div class="alert alert-success">{{ hinweis }}</div>{% endif %}
+    {% if fehler %}<div class="alert alert-error">{{ fehler }}</div>{% endif %}
+    {% block inhalt %}{% endblock %}
+  </main>
+</div>
+<script src="/static/js/app.js"></script>
+{% endblock %}

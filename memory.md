@@ -2,6 +2,37 @@
 
 Kurzprotokoll für die nächste Sitzung. Neueste Einträge oben.
 
+## 01.10.2026 – Meilenstein 3 (Login, Rollen, Mitarbeiter, Chips)
+
+**Fertig**
+- Login mit scrypt (stdlib), Sitzung als HMAC-signiertes Cookie (gleitend, Dauer aus
+  `web.sitzung_min`), Schlüssel `web.geheimnis` in `einstellung` (überlebt Updates).
+  Passwortwechsel macht alte Sitzungen ungültig. Fehlversuch: 1 s Bremse + Protokoll.
+- Ersteinrichtung `/admin/einrichten` nur solange kein Benutzer existiert – **keine
+  Standardpasswörter am Gerät**. Dev-Seed mit Testdaten: `admin/admin`, `waesche/waesche`.
+- Rechteprüfung `Depends(recht("…"))`; Navigation zeigt nur Erlaubtes.
+  Herkunftsprüfung (Origin/Referer) gegen CSRF + Cookie SameSite=strict.
+- Mitarbeiter: Liste/Suche, Anlegen/Bearbeiten, CSV-Import mit Vorschau
+  (`;`/`,`, UTF-8/Windows-1252, Spaltenaliasse, Abgleich über Personalnummer,
+  Fehlende optional deaktivieren – nie löschen).
+- Chips: anlegen, zuordnen/lösen, sperren, löschen; Filter „nicht zugeordnet“.
+- Benutzer (Admin): Rolle, Mitarbeiter-Verknüpfung (für Rolle am Display),
+  Passwort optional („nur Chip“); letzter aktiver Admin bleibt geschützt.
+- Migration 0002: `ereignis.benutzer_id`. Alle Änderungen protokolliert.
+- Inaktive Mitarbeiter gelten am Leser als unbekannt.
+- 28 Tests (DB-Tests gegen `mvt_test`, frisch per Alembic migriert).
+  Bootprobe: Update 0001 → 0002 auf bestehenden Daten im Container geprüft.
+
+**Entscheidungen**
+- Kein Sitzungsspeicher in der DB (Flash), dafür signierte Cookies.
+- Templates bekommen `kopf`/`rechte` als einfache Werte, Integritätsfehler per
+  Savepoint – sonst verfallen ORM-Objekte nach Rollback (MissingGreenlet).
+
+**Nächste Schritte**
+- Meilenstein 4: Modus bekleidung – Befüllen/Zuweisen, Abholen per Chip, Anlernen,
+  Stornieren; Zustandsmaschine Fach (frei/belegt/gestört, gesperrt).
+- Offener Punkt im Lastenheft: Fach frei bei Tür auf oder erst bei Tür zu?
+
 ## 01.10.2026 – Hardware-Entscheidungen
 
 - **IO-Module: nur Waveshare.** romutec entfällt, Treiber `romutec_romod` gelöscht.

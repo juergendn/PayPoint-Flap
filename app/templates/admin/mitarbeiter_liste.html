@@ -1,0 +1,37 @@
+{% extends "admin/layout.html" %}
+{% block seitentitel %}Mitarbeiter{% endblock %}
+{% block inhalt %}
+<div class="card">
+  <div class="werkzeugleiste">
+    <form method="get" class="suche">
+      <input name="q" value="{{ q }}" placeholder="Name, Personalnummer, Abteilung" autofocus />
+      <label class="checkbox"><input type="checkbox" name="alle" value="true" {{ 'checked' if alle }} onchange="this.form.submit()" /> auch inaktive</label>
+      <button class="btn btn-secondary">Suchen</button>
+    </form>
+    <div>
+      <a class="btn btn-outline-primary" href="/admin/mitarbeiter/import">CSV-Import</a>
+      <a class="btn btn-primary" href="/admin/mitarbeiter/neu">Neu</a>
+    </div>
+  </div>
+  <p class="text-muted">{{ liste|length }} angezeigt · {{ gesamt }} aktiv gesamt</p>
+  <div class="table-responsive">
+    <table>
+      <thead><tr><th>Pers.-Nr.</th><th>Name</th><th>Abteilung</th><th>E-Mail</th><th>Chips</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for m in liste %}
+        <tr class="klickbar" onclick="location.href='/admin/mitarbeiter/{{ m.id }}'">
+          <td>{{ m.personalnummer }}</td>
+          <td><a href="/admin/mitarbeiter/{{ m.id }}">{{ m.name }}</a></td>
+          <td>{{ m.abteilung or '' }}</td>
+          <td>{{ m.email or '' }}</td>
+          <td>{{ m.chips|length }}</td>
+          <td>{% if m.aktiv %}<span class="badge badge-success">aktiv</span>{% else %}<span class="badge badge-error">inaktiv</span>{% endif %}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-muted">Keine Mitarbeiter gefunden</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
