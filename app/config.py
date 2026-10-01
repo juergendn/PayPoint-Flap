@@ -5,7 +5,9 @@ Fachliche Einstellungen (Impulsdauer, Fristen …) liegen in der Tabelle `einste
 damit sie ohne neuen Container änderbar sind.
 """
 
+import tomllib
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -36,3 +38,14 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+@lru_cache
+def app_version() -> str:
+    """Version aus pyproject.toml – liegt in der Entwicklung im Repo und im
+    Container unter /opt/mvt/app neben dem Paket."""
+    try:
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        return tomllib.loads(pyproject.read_text())["project"]["version"]
+    except (OSError, KeyError, tomllib.TOMLDecodeError):
+        return "?"

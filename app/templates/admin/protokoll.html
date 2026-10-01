@@ -1,0 +1,50 @@
+{% extends "admin/layout.html" %}
+{% block seitentitel %}Protokoll{% endblock %}
+{% block inhalt %}
+<div class="card">
+  <form method="get" class="filterleiste">
+    <div><label for="von">Von</label><input id="von" type="date" name="von" value="{{ filter.von }}" /></div>
+    <div><label for="bis">Bis</label><input id="bis" type="date" name="bis" value="{{ filter.bis }}" /></div>
+    <div>
+      <label for="art">Ereignis</label>
+      <select id="art" name="art">
+        <option value="">alle</option>
+        {% for a in vorhandene_arten %}<option value="{{ a }}" {{ 'selected' if a == filter.art }}>{{ arten.get(a, a) }}</option>{% endfor %}
+      </select>
+    </div>
+    <div><label for="fach">Fach</label><input id="fach" name="fach" value="{{ filter.fach }}" inputmode="numeric" size="3" /></div>
+    <div><label for="person">Mitarbeiter / Benutzer</label><input id="person" name="person" value="{{ filter.person }}" /></div>
+    <div class="filter-knoepfe">
+      <button class="btn btn-primary">Filtern</button>
+      <a class="btn btn-secondary" href="/admin/protokoll">Zurücksetzen</a>
+      <a class="btn btn-outline-primary" href="/admin/protokoll.csv?{{ filter_url }}">CSV</a>
+    </div>
+  </form>
+  <p class="text-muted">{{ gesamt }} Ereignis(se){% if seiten > 1 %} · Seite {{ seite_nr }} von {{ seiten }}{% endif %}</p>
+  <div class="table-responsive">
+    <table>
+      <thead><tr><th>Zeit</th><th>Ereignis</th><th>Fach</th><th>Mitarbeiter</th><th>Benutzer</th><th>Details</th></tr></thead>
+      <tbody>
+        {% for e, fach_nr, ma_name, login in zeilen %}
+        <tr class="art-{{ e.art }}">
+          <td class="text-muted nowrap">{{ e.zeitpunkt|ortszeit('%d.%m.%Y %H:%M:%S') }}</td>
+          <td>{{ arten.get(e.art, e.art) }}</td>
+          <td>{{ fach_nr or '' }}</td>
+          <td>{{ ma_name or '' }}</td>
+          <td>{{ login or '' }}</td>
+          <td class="text-muted details">{{ details(e) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-muted">Keine Ereignisse</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if seiten > 1 %}
+  <div class="blaettern">
+    {% if seite_nr > 1 %}<a class="btn btn-secondary btn-sm" href="?{{ filter_url }}&seite_nr={{ seite_nr - 1 }}">← neuer</a>{% endif %}
+    {% if seite_nr < seiten %}<a class="btn btn-secondary btn-sm" href="?{{ filter_url }}&seite_nr={{ seite_nr + 1 }}">älter →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

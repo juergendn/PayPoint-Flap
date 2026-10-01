@@ -107,6 +107,8 @@ h3 {
   align-items: center;
   gap: 10px;
   font-size: 1.2rem;
+  color: var(--text);
+  text-decoration: none;
 }
 
 .page-title {
@@ -883,4 +885,49 @@ body.kiosk {
 .fachkachel.fach-gesperrt,
 .fachkachel.fach-gestoert {
   border-color: var(--error);
+}
+
+/* ---------- Protokoll, Einstellungen ---------- */
+
+.filterleiste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 8px;
+}
+.filterleiste > div {
+  min-width: 120px;
+}
+.filterleiste label {
+  margin-bottom: 4px;
+}
+.filter-knoepfe {
+  display: flex;
+  gap: 8px;
+}
+.nowrap {
+  white-space: nowrap;
+}
+td.details {
+  font-size: 0.85rem;
+  word-break: break-word;
+}
+tr.art-stoerung td,
+tr.art-modul_stoerung td,
+tr.art-anmeldung_fehlgeschlagen td {
+  color: var(--error-text);
+}
+.blaettern {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.hilfe {
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+form.einstellungen .card {
+  margin-bottom: 20px;
 }

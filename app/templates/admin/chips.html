@@ -61,7 +61,7 @@
             </form>
           </td>
           <td>{% if c.aktiv %}<span class="badge badge-success">aktiv</span>{% else %}<span class="badge badge-error">gesperrt</span>{% endif %}</td>
-          <td class="text-muted">{{ c.angelegt_am.astimezone().strftime('%d.%m.%Y %H:%M') }}</td>
+          <td class="text-muted">{{ c.angelegt_am|ortszeit }}</td>
           <td class="rechts">
             <form method="post" action="/admin/chips/{{ c.id }}/aktiv" class="inline">
               <button class="btn btn-outline-warning btn-sm">{{ 'Sperren' if c.aktiv else 'Freigeben' }}</button>

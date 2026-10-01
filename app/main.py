@@ -18,7 +18,14 @@ from app.modes.bekleidung.ablauf import Bekleidung
 from app.services.leser import LeserDienst
 from app.services.tuerkontakte import Tuerueberwachung
 from app.web import auth as web_auth
-from app.web.admin import anmeldung, benutzer, chips, mitarbeiter
+from app.web.admin import (
+    anmeldung,
+    benutzer,
+    chips,
+    einstellungen,
+    mitarbeiter,
+    protokoll,
+)
 from app.web.admin import routes as admin
 from app.web.display import routes as display
 from app.web.display.sitzung import DisplaySitzungen
@@ -70,5 +77,5 @@ app.mount(
 app.add_middleware(web_auth.SitzungsMiddleware)
 app.add_exception_handler(web_auth.NichtAngemeldet, web_auth.nicht_angemeldet_behandeln)
 app.include_router(display.router)
-for teil in (anmeldung, admin, mitarbeiter, chips, benutzer):
+for teil in (anmeldung, admin, mitarbeiter, chips, benutzer, protokoll, einstellungen):
     app.include_router(teil.router, prefix="/admin")

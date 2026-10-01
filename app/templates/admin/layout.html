@@ -24,9 +24,18 @@
     <a class="nav-link {{ 'active' if aktiv == 'chips' }}" href="/admin/chips"><span class="nav-icon">🏷️</span> Chips</a>
     {% endif %}
     {% endif %}
-    {% if 'benutzer_verwalten' in rechte %}
+    {% if 'protokoll_lesen' in rechte %}
+    <div class="nav-group-header">Betrieb</div>
+    <a class="nav-link {{ 'active' if aktiv == 'protokoll' }}" href="/admin/protokoll"><span class="nav-icon">📜</span> Protokoll</a>
+    {% endif %}
+    {% if 'benutzer_verwalten' in rechte or 'einstellungen_verwalten' in rechte %}
     <div class="nav-group-header">System</div>
+    {% if 'benutzer_verwalten' in rechte %}
     <a class="nav-link {{ 'active' if aktiv == 'benutzer' }}" href="/admin/benutzer"><span class="nav-icon">🔑</span> Benutzer</a>
+    {% endif %}
+    {% if 'einstellungen_verwalten' in rechte %}
+    <a class="nav-link {{ 'active' if aktiv == 'einstellungen' }}" href="/admin/einstellungen"><span class="nav-icon">⚙️</span> Einstellungen</a>
+    {% endif %}
     {% endif %}
   </nav>
   <main class="content">

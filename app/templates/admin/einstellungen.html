@@ -1,0 +1,44 @@
+{% extends "admin/layout.html" %}
+{% block seitentitel %}Einstellungen{% endblock %}
+{% block inhalt %}
+<div class="dashboard-grid">
+  <form method="post" action="/admin/einstellungen" class="einstellungen">
+    {% for gruppe, definitionen in gruppen.items() %}
+    <div class="card">
+      <h3>{{ gruppe }}</h3>
+      {% for d in definitionen %}
+      <div class="form-group">
+        <label for="{{ d.schluessel }}">{{ d.titel }}</label>
+        {% if d.typ == 'auswahl' %}
+        <select id="{{ d.schluessel }}" name="{{ d.schluessel }}">
+          {% for a in d.auswahl %}<option value="{{ a }}" {{ 'selected' if werte[d.schluessel] == a }}>{{ a }}</option>{% endfor %}
+        </select>
+        {% elif d.typ == 'passwort' %}
+        <input id="{{ d.schluessel }}" name="{{ d.schluessel }}" type="password" autocomplete="new-password"
+               placeholder="{{ '•••••••• (gesetzt)' if werte[d.schluessel] else 'nicht gesetzt' }}" />
+        {% elif d.typ == 'int' %}
+        <input id="{{ d.schluessel }}" name="{{ d.schluessel }}" type="number" value="{{ werte[d.schluessel] }}"
+               {% if d.minimum is not none %}min="{{ d.minimum }}"{% endif %} {% if d.maximum is not none %}max="{{ d.maximum }}"{% endif %} required />
+        {% else %}
+        <input id="{{ d.schluessel }}" name="{{ d.schluessel }}" type="{{ 'email' if d.typ == 'email' else 'text' }}" value="{{ werte[d.schluessel] }}" />
+        {% endif %}
+        {% if d.hilfe %}<div class="hilfe text-muted">{{ d.hilfe }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <div class="aktionen"><button class="btn btn-primary">Speichern</button></div>
+  </form>
+
+  <div class="card">
+    <h3>System</h3>
+    <table>
+      <tr><td class="text-muted">Version</td><td>{{ info.version }}</td></tr>
+      <tr><td class="text-muted">Datenbank</td><td>{{ info.db_groesse }}</td></tr>
+      <tr><td class="text-muted">Protokolleinträge</td><td>{{ info.ereignisse }}</td></tr>
+      <tr><td class="text-muted">Ältester Eintrag</td><td>{{ info.aeltester|ortszeit }}</td></tr>
+      <tr><td class="text-muted">Leser</td><td>{{ 'verbunden' if info.leser_ok else 'getrennt' }}</td></tr>
+    </table>
+  </div>
+</div>
+{% endblock %}

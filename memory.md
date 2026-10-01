@@ -2,6 +2,29 @@
 
 Kurzprotokoll für die nächste Sitzung. Neueste Einträge oben.
 
+## 01.10.2026 – Meilenstein 6 (Webinterface: Protokoll, Einstellungen)
+
+**Fertig**
+- Protokoll (`protokoll_lesen`): Filter Zeitraum (deutsche Kalendertage →
+  UTC), Ereignisart, Fach, Mitarbeiter/Benutzer; 100 je Seite; CSV-Export für
+  Excel (`;`, UTF-8-BOM, max. 50 000). Arten als Text in `core/protokoll.ARTEN`.
+- Einstellungen (`einstellungen_verwalten`): `core/einstellungen.DEFINITIONEN`
+  mit Typ/Grenzen/Standard; alles oder nichts speichern; Passwortfeld leer =
+  unverändert, Wert nie angezeigt und nie im Protokoll. Gruppen Automat,
+  Datenschutz, E-Mail (SMTP-Felder für Meilenstein 7 schon da). Systeminfo-Karte.
+- Zeiten überall über Filter `ortszeit` (Europe/Berlin, `tzdata` als Paket),
+  unabhängig von der Container-Zeitzone.
+- 49 Tests.
+
+**Hinweis**
+- SMTP-Passwort liegt im Klartext in `einstellung` (muss zum Senden lesbar sein);
+  Schutz = Datenbank nur per Unix-Socket im Container.
+
+**Nächste Schritte**
+- Meilenstein 7: Maildienst (Queue, Wiederholung, offline-fest), Erinnerung
+  nach X Tagen an Wäscheabteilung, nächtliches Aufräumen (Protokoll > N Tage),
+  Testmail-Knopf in den Einstellungen.
+
 ## 01.10.2026 – Meilenstein 5 (Display)
 
 **Fertig**
