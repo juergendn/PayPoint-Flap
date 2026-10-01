@@ -1,0 +1,21 @@
+# busybox init – <id>:<runlevels>:<action>:<process>; id und runlevels bleiben leer.
+# icom OS startet im Container /sbin/init (kein systemd), wie bei PayPoint-60.
+
+# Verzeichnisse unter /data und /tmp, Datenbank anlegen, Rechte der seriellen Ports
+::sysinit:/opt/mvt/bin/prepare.sh
+
+# PostgreSQL und App getrennt: stirbt die App, bleibt die Datenbank oben.
+::respawn:/opt/mvt/bin/start-db.sh
+::respawn:/opt/mvt/bin/start.sh
+
+# Begrenzt die Logs in /data (kein journald, Flash schonen)
+::respawn:/opt/mvt/bin/rotate-log.sh wache
+
+# SSH für die Inbetriebnahme – läuft nur mit beim Bauen hinterlegtem Schlüssel
+::respawn:/opt/mvt/bin/start-ssh.sh
+
+# Stoppt icom OS den Container: App und Datenbank geordnet beenden
+::shutdown:/opt/mvt/bin/stop.sh
+
+::restart:/sbin/init
+::ctrlaltdel:/sbin/reboot

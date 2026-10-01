@@ -1,0 +1,71 @@
+# Lokale Entwicklungsumgebung: App + PostgreSQL + Hardware-Simulator.
+# Start: docker compose up --build
+#   Web-App        http://localhost:8000          (Display "/", Admin "/admin")
+#   Simulator-UI   http://localhost:8081          (Türen, Module, Chips)
+#
+# Speichergrenzen grob wie auf dem MOROS.neo (1 GB gesamt, Rest für icom OS),
+# damit Speicherhunger früh auffällt und nicht erst am Gerät.
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: mvt
+      POSTGRES_USER: mvt
+      POSTGRES_PASSWORD: mvt
+    # Sparsam für 1 GB RAM und Flash: kleine Puffer, seltene Checkpoints.
+    command: >
+      postgres
+      -c shared_buffers=32MB
+      -c max_connections=20
+      -c work_mem=2MB
+      -c maintenance_work_mem=16MB
+      -c checkpoint_timeout=15min
+      -c wal_writer_delay=1000ms
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mvt -d mvt"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  hwsim:
+    build: .
+    command: python -m hwsim
+    environment:
+      SIM_TUER_ZU_NACH_S: "8"
+    volumes:
+      - ./hwsim:/srv/hwsim
+    ports:
+      - "8081:8080"
+
+  app:
+    build: .
+    command: >
+      sh -c "alembic upgrade head && python -m app.seed &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000
+             --reload --reload-dir app --timeout-graceful-shutdown 2"
+    environment:
+      MVT_DATABASE_URL: postgresql+asyncpg://mvt:mvt@db:5432/mvt
+      MVT_LESER_TREIBER: elatec_twn4
+      MVT_LESER_URL: socket://hwsim:7000
+      MVT_SEED_IO: hwsim:5021,hwsim:5022,hwsim:5023
+      MVT_SEED_TESTDATEN: "1"
+    volumes:
+      - ./app:/srv/app
+      - ./alembic.ini:/srv/alembic.ini
+      - ./tests:/srv/tests
+      - ./hwsim:/srv/hwsim
+    ports:
+      - "8000:8000"
+    mem_limit: 384m
+    depends_on:
+      db:
+        condition: service_healthy
+      hwsim:
+        condition: service_started
+
+volumes:
+  pgdata:

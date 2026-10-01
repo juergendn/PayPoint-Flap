@@ -1,0 +1,30 @@
+{% if meldung %}
+<div class="alert alert-{{ meldung[0] }}">{{ meldung[1] }}</div>
+{% endif %}
+<div class="card">
+  <h3>Hardware</h3>
+  <span class="badge {{ 'badge-success' if leser_ok else 'badge-error' }}">
+    Leser {{ 'verbunden' if leser_ok else 'getrennt' }}
+  </span>
+  {% for modul_id, ok in module.items() %}
+  <span class="badge {{ 'badge-success' if ok else 'badge-error' }}">IO-Modul {{ modul_id }}</span>
+  {% endfor %}
+</div>
+<div class="fach-grid">
+  {% for fach in faecher %}
+  {% set s = status[fach.id] %}
+  <div class="card fach fach-{{ s }}">
+    <div class="fach-nummer brand-font">{{ fach.nummer }}</div>
+    <div class="text-muted">{{ fach.zustand }}{% if fach.gesperrt %} · gesperrt{% endif %}</div>
+    <div class="fach-schloss">
+      {% if s == 'verriegelt' %}🔒 zu{% elif s == 'offen' %}🔓 offen{% elif s == 'gestoert' %}⚠️ Störung{% else %}–{% endif %}
+    </div>
+    {% if fach.io_modul %}
+    <div class="text-muted fach-io">{{ fach.io_modul.name }} · K{{ fach.kanal }}</div>
+    <button class="btn btn-outline-primary btn-sm"
+            hx-post="/admin/fach/{{ fach.id }}/oeffnen" hx-target="#faecher"
+            hx-disabled-elt="this">Öffnen</button>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>

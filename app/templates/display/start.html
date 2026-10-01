@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block body_klasse %}kiosk{% endblock %}
+{% block body %}
+<main class="kiosk-start">
+  <h1 class="kiosk-titel">Klappenautomat</h1>
+  <div id="hinweis" class="kiosk-hinweis">Bitte Chip an den Leser halten</div>
+  <div id="chip" class="kiosk-chip" hidden></div>
+</main>
+<script>
+  // Live-Anzeige: zeigt den gelesenen Chip 5 s lang, dann wieder den Hinweis.
+  (function () {
+    var hinweis = document.getElementById("hinweis");
+    var chip = document.getElementById("chip");
+    var timer;
+    new EventSource("/events").addEventListener("chip", function (e) {
+      var m = JSON.parse(e.data);
+      chip.className = "kiosk-chip " + (m.name ? "ok" : "fehler");
+      chip.textContent = m.name ? "Hallo " + m.name : "Chip unbekannt (" + m.kennung + ")";
+      chip.hidden = false;
+      hinweis.hidden = true;
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        chip.hidden = true;
+        hinweis.hidden = false;
+      }, 5000);
+    });
+  })();
+</script>
+{% endblock %}

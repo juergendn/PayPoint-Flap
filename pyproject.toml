@@ -1,0 +1,14 @@
+[project]
+name = "mvt-klappenautomat"
+version = "0.1.0"
+description = "Klappenautomat zur Ausgabe von Mitarbeiterbekleidung – MinervaTec"
+requires-python = ">=3.12"
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]

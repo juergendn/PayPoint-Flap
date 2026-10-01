@@ -1,0 +1,292 @@
+/* MVT-Klappenautomat – nach DESIGN_SYSTEM.md (MinervaTec Dark Dashboard).
+   Abweichung: Audiowide wird lokal ausgeliefert, weil das Display offline läuft. */
+
+@font-face {
+  font-family: "Audiowide";
+  src: url("/static/fonts/Audiowide-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel-2: #1c2128;
+  --border: #30363d;
+  --text: #e6eef3;
+  --muted: #8b949e;
+  --accent: #1f6feb;
+  --accent-hover: #388bfd;
+  --accent-text: #58a6ff;
+  --success: #3fb950;
+  --error: #f85149;
+  --danger: #f85149;
+  --warning: #d29922;
+  --success-text: #7ee787;
+  --error-text: #ff7b72;
+  --warning-text: #e3b341;
+  --bg-glow-1: rgba(77, 208, 255, 0.15);
+  --bg-glow-2: rgba(255, 126, 219, 0.2);
+}
+
+[data-theme="light"] {
+  --bg: #f6f8fa;
+  --panel: #ffffff;
+  --panel-2: #eff2f5;
+  --border: #d0d7de;
+  --text: #1f2328;
+  --muted: #59636e;
+  --accent: #0969da;
+  --accent-hover: #0550ae;
+  --accent-text: #0969da;
+  --success: #1a7f37;
+  --error: #cf222e;
+  --danger: #cf222e;
+  --warning: #9a6700;
+  --success-text: #1a7f37;
+  --error-text: #cf222e;
+  --warning-text: #9a6700;
+  --bg-glow-1: rgba(9, 105, 218, 0.07);
+  --bg-glow-2: rgba(191, 57, 137, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg);
+  background:
+    radial-gradient(circle at top, var(--bg-glow-1), transparent 55%),
+    radial-gradient(circle at 20% 20%, var(--bg-glow-2), transparent 45%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+.brand-font {
+  font-family: "Audiowide", sans-serif;
+  font-weight: normal;
+}
+
+h3 {
+  margin-top: 0;
+}
+
+/* ---------- Layout (Webinterface) ---------- */
+
+.app-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.topbar {
+  height: 90px;
+  flex-shrink: 0;
+  background-color: var(--panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+}
+
+.page-title {
+  flex: 1;
+  text-align: center;
+  font-size: 24px;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* ---------- Komponenten ---------- */
+
+.card {
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.btn-primary {
+  background-color: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+}
+.btn-outline-primary {
+  background: transparent;
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
+}
+.btn-outline-primary:hover {
+  background-color: rgba(31, 111, 235, 0.1);
+}
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.85em;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  margin: 2px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.badge-success {
+  background: rgba(63, 185, 80, 0.2);
+  color: var(--success-text);
+  border: 1px solid var(--success);
+}
+.badge-error {
+  background: rgba(248, 81, 73, 0.2);
+  color: var(--error-text);
+  border: 1px solid var(--error);
+}
+.badge-warning {
+  background: rgba(210, 153, 34, 0.2);
+  color: var(--warning-text);
+  border: 1px solid var(--warning);
+}
+
+.alert {
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+.alert-success {
+  background: rgba(63, 185, 80, 0.1);
+  border: 1px solid var(--success);
+  color: var(--success-text);
+}
+.alert-error {
+  background: rgba(248, 81, 73, 0.1);
+  border: 1px solid var(--error);
+  color: var(--error-text);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--success);
+  box-shadow: 0 0 8px var(--success);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+/* ---------- Fachübersicht ---------- */
+
+.fach-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+}
+.fach {
+  margin: 0;
+  padding: 12px;
+  text-align: center;
+}
+.fach-nummer {
+  font-size: 1.6rem;
+}
+.fach-schloss {
+  margin: 8px 0;
+}
+.fach-io {
+  font-size: 0.75rem;
+  margin-bottom: 8px;
+}
+.fach-offen {
+  border-color: var(--warning);
+  background-color: rgba(210, 153, 34, 0.1);
+}
+.fach-gestoert {
+  border-color: var(--error);
+  background-color: rgba(248, 81, 73, 0.1);
+}
+
+/* ---------- Kiosk-Display (WP10A, Touch) ----------
+   Eigenes, schlankes Layout: keine Sidebar, große Flächen, kein Hover. */
+
+body.kiosk {
+  user-select: none;
+  cursor: default;
+}
+.kiosk-start {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  text-align: center;
+  padding: 16px;
+}
+.kiosk-titel {
+  font-size: 3rem;
+  margin: 0;
+}
+.kiosk-hinweis {
+  font-size: 1.8rem;
+  color: var(--muted);
+}
+.kiosk-chip {
+  font-size: 2.2rem;
+  padding: 24px 40px;
+  border-radius: 12px;
+}
+.kiosk-chip.ok {
+  background: rgba(63, 185, 80, 0.15);
+  border: 1px solid var(--success);
+  color: var(--success-text);
+}
+.kiosk-chip.fehler {
+  background: rgba(248, 81, 73, 0.15);
+  border: 1px solid var(--error);
+  color: var(--error-text);
+}

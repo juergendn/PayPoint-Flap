@@ -1,0 +1,7 @@
+.git
+.venv
+**/__pycache__
+.pytest_cache
+wiki
+deploy/dist
+deploy/authorized_keys

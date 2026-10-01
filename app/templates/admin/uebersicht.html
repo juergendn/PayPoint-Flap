@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titel %}Übersicht – MVT-Klappenautomat{% endblock %}
+{% block body %}
+<header class="topbar">
+  <div class="brand brand-font"><span class="status-dot"></span> MVT-Klappenautomat</div>
+  <div class="page-title brand-font">Übersicht</div>
+  <div class="text-muted">Entwicklungsstand · ohne Login</div>
+</header>
+<div class="app-container">
+  <main class="content">
+    <div id="faecher" hx-get="/admin/faecher" hx-trigger="every 2s" hx-swap="innerHTML">
+      {% include "admin/_faecher.html" %}
+    </div>
+  </main>
+</div>
+{% endblock %}

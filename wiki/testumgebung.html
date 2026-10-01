@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Testumgebung – MVT-Klappenautomat</title>
+    <style>
+      body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 860px;
+             margin: 2rem auto; padding: 0 1rem; color: #1f2328; line-height: 1.5; }
+      code, pre { background: #eff2f5; border-radius: 4px; padding: 0.1em 0.3em; }
+      pre { padding: 0.8em; overflow-x: auto; }
+      table { border-collapse: collapse; } td, th { border: 1px solid #d0d7de; padding: 4px 8px; }
+    </style>
+  </head>
+  <body>
+    <h1>Testumgebung ohne Hardware</h1>
+    <p>
+      Solange MOROS.neo, IO-Module und Leser fehlen, läuft alles in Docker auf dem
+      Mac. Der Mac (Apple Silicon) hat dieselbe Architektur (arm64) wie der
+      MOROS.neo. Der Simulator spricht <b>echte Protokolle</b> (Modbus TCP,
+      serielle Textzeilen über TCP), deshalb laufen die echten Treiber und nicht nur
+      Attrappen.
+    </p>
+
+    <svg viewBox="0 0 640 230" width="100%" role="img" aria-label="Aufbau der Testumgebung">
+      <style>
+        .b { fill: #f6f8fa; stroke: #59636e; } .t { font: 13px sans-serif; fill: #1f2328; }
+        .s { font: 11px sans-serif; fill: #59636e; } .l { stroke: #0969da; stroke-width: 1.5; fill: none; }
+      </style>
+      <rect class="b" x="10" y="20" width="150" height="50" rx="6" />
+      <text class="t" x="20" y="42">Browser (Kiosk)</text>
+      <text class="s" x="20" y="60">localhost:8000/</text>
+      <rect class="b" x="10" y="150" width="150" height="50" rx="6" />
+      <text class="t" x="20" y="172">Browser (Admin)</text>
+      <text class="s" x="20" y="190">localhost:8000/admin</text>
+      <rect class="b" x="240" y="80" width="160" height="70" rx="6" />
+      <text class="t" x="252" y="104">app (FastAPI)</text>
+      <text class="s" x="252" y="122">Treiber waveshare_io8</text>
+      <text class="s" x="252" y="138">Treiber elatec_twn4</text>
+      <rect class="b" x="240" y="180" width="160" height="40" rx="6" />
+      <text class="t" x="252" y="205">db (PostgreSQL)</text>
+      <rect class="b" x="470" y="40" width="160" height="150" rx="6" />
+      <text class="t" x="482" y="64">hwsim</text>
+      <text class="s" x="482" y="86">Modbus :5021–5023</text>
+      <text class="s" x="482" y="104">3 Module × 8 Schlösser</text>
+      <text class="s" x="482" y="122">Leser :7000</text>
+      <text class="s" x="482" y="140">Bedien-UI :8081</text>
+      <path class="l" d="M160 45 L240 100" /><path class="l" d="M160 175 L240 130" />
+      <path class="l" d="M320 150 L320 180" />
+      <path class="l" d="M400 100 L470 90" /><text class="s" x="408" y="86">Modbus TCP</text>
+      <path class="l" d="M400 130 L470 130" /><text class="s" x="408" y="146">socket://</text>
+    </svg>
+
+    <h2>Bedienung</h2>
+    <pre>docker compose up --build        # alles starten
+docker compose run --rm app pytest  # Tests
+docker compose down -v           # alles inkl. DB löschen</pre>
+    <table>
+      <tr><th>Adresse</th><th>Zweck</th></tr>
+      <tr><td>http://localhost:8000/</td><td>Display (Kiosk), Live-Chipanzeige</td></tr>
+      <tr><td>http://localhost:8000/admin</td><td>Fachübersicht, Testöffnung (noch ohne Login)</td></tr>
+      <tr><td>http://localhost:8081/</td><td>Simulator: Chips vorhalten, Türen schließen, Nothebel, Modul aus</td></tr>
+    </table>
+    <p>
+      Display-Größe wie WP10A testen: Chromium mit
+      <code>--kiosk --app=http://localhost:8000/</code> oder DevTools-Gerätemodus.
+    </p>
+
+    <h2>Was der Simulator nachbildet</h2>
+    <ul>
+      <li>Schloss entriegelt nur bei Impuls ≥ 1000 ms (Kerong), einmal pro Impuls.</li>
+      <li>Feder drückt die Tür auf → Schalter meldet „offen“. Nach 8 s schließt die Tür
+        automatisch (<code>SIM_TUER_ZU_NACH_S</code>, 0 = nur manuell).</li>
+      <li>Ausgang länger als 5 s an → Fehlermeldung „Spule überhitzt“ im Log.</li>
+      <li>„Modul aus“: Modul antwortet nicht mehr (Timeout wie bei gezogenem Kabel).</li>
+      <li>Testchips: 04A1B2C3D4/D5/D6 (Anna, Bernd, Clara), DEADBEEF (unbekannt).</li>
+    </ul>
+
+    <h2>Unterschiede zum Automaten</h2>
+    <ul>
+      <li>IO-Module: im Simulator ein Host mit Ports 5021–5023, am Automaten
+        192.168.10.11–13 Port 502. Steht nur in Tabelle <code>io_modul</code>.</li>
+      <li>Leser: <code>MVT_LESER_URL=socket://hwsim:7000</code> statt
+        <code>/dev/ttyS0</code>.</li>
+      <li>App und Datenbank laufen hier getrennt. Auf dem MOROS.neo laufen sie
+        gemeinsam in einem LXC-Container. Den gibt es auch auf dem Mac:
+        <code>deploy/boottest.sh</code> → http://localhost:8002/ (siehe
+        <code>deploy/README.md</code>).</li>
+    </ul>
+  </body>
+</html>

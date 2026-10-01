@@ -1,0 +1,54 @@
+"""Einstieg der Web-App: Treiber und Hintergrunddienste leben im Lifespan."""
+
+import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy import select
+
+from app.config import get_settings
+from app.db.models import IoModul
+from app.db.session import SessionFactory, engine
+from app.drivers import reader
+from app.drivers.lock import SchlossRegistry
+from app.services.leser import LeserDienst
+from app.web.admin import routes as admin
+from app.web.display import routes as display
+
+settings = get_settings()
+logging.basicConfig(
+    level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    schloesser = SchlossRegistry()
+    async with SessionFactory() as session:
+        module = await session.scalars(
+            select(IoModul).where(IoModul.automat_id == settings.automat_id)
+        )
+        schloesser.laden(list(module))
+
+    leser_dienst = LeserDienst(reader.erzeuge(settings), SessionFactory)
+    leser_dienst.starten()
+
+    app.state.schloesser = schloesser
+    app.state.leser_dienst = leser_dienst
+    yield
+    await leser_dienst.stoppen()
+    await schloesser.schliessen()
+    await engine.dispose()
+
+
+app = FastAPI(title="MVT-Klappenautomat", lifespan=lifespan)
+app.mount(
+    "/static",
+    StaticFiles(directory=Path(__file__).parent / "static"),
+    name="static",
+)
+app.include_router(display.router)
+app.include_router(admin.router, prefix="/admin")

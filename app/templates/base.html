@@ -1,0 +1,15 @@
+<!doctype html>
+{% set theme_light = request.cookies.get('mvt_theme') == 'light' %}
+<html lang="de"{% if theme_light %} data-theme="light"{% endif %}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="{{ '#f6f8fa' if theme_light else '#0d1117' }}" />
+    <title>{% block titel %}MVT-Klappenautomat{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="/static/js/htmx.min.js" defer></script>
+  </head>
+  <body class="{% block body_klasse %}{% endblock %}">
+    {% block body %}{% endblock %}
+  </body>
+</html>

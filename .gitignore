@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.env
+*.egg-info/
+.DS_Store
+deploy/dist/
+deploy/authorized_keys
+.mrx-config
