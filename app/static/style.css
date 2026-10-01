@@ -276,10 +276,18 @@ body.kiosk {
   top: 20px;
   left: 24px;
   right: 24px;
-  display: flex;
-  justify-content: space-between;
+  /* Raster statt space-between: die Außenlogos sind unterschiedlich breit,
+     so steht das mittlere trotzdem genau in der Bildschirmmitte. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   pointer-events: none;
+}
+.kiosk-logos .logo-mitte img {
+  height: 95px; /* 56 px × 1,7 */
+}
+.kiosk-logos > :last-child {
+  justify-self: end;
 }
 .kiosk-logos img {
   height: 56px;
