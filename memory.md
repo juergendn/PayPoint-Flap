@@ -2,6 +2,36 @@
 
 Kurzprotokoll für die nächste Sitzung. Neueste Einträge oben.
 
+## 01.10.2026 – Meilenstein 7 (Mail + Hintergrunddienste)
+
+**Fertig**
+- `core/mail.py`: einreihen (gleiche Transaktion wie der Anlass) + Versand über
+  smtplib im Thread (starttls/ssl/keine). EmailMessage gegen Header-Injection.
+- `services/hintergrund.py`:
+  - Maildienst alle 15 s; Wiederholung 1, 2, 4 … max. 60 min, nach 55 Versuchen
+    (~2 Tage) `fehler`. Netzfehler → restliche Mails des Zyklus nicht probieren;
+    SMTP-Fehler einer Mail (z. B. Empfänger abgelehnt) blockiert die anderen nicht.
+    Ohne SMTP-Konfiguration bleibt alles in der Queue, ohne Versuch zu zählen.
+  - Erinnerung (alle 10 min geprüft): Sammelmail an `mail.waesche` für Fächer
+    belegt > `erinnerung.tage`; je Zuweisung einmal (`zuweisung.erinnert_am`).
+  - Aufräumen täglich ab 03:00 Ortszeit (letzter Lauf in `einstellung`, übersteht
+    Neustarts): Ereignisse und abgeschlossene Zuweisungen > `protokoll.tage`,
+    gesendete/aufgegebene Mails > 30 Tage.
+- Türüberwachung: Tür offen > `tuer.max_offen_min` (10) → einmal je Öffnung
+  Protokoll + Mail an die Wäscheabteilung.
+- Einstellungen: Testmail (sofort, zeigt echten SMTP-Fehler), letzte 10 Mails mit
+  Status. Migration 0004 (`mail.naechster_versuch`, `zuweisung.erinnert_am`).
+- Dev: Mailpit (http://localhost:8025), Seed trägt SMTP dafür ein.
+- 58 Tests; live geprüft: Mail an Mitarbeiter, Testmail, Mailserver weg → Queue,
+  Fach trotzdem belegt, Server zurück → zugestellt.
+
+**Hinweis Tests:** `db`-Fixture setzt jetzt auch `einstellung` zurück.
+
+**Nächste Schritte**
+- Meilenstein 8: echte Treiber am Muster (Waveshare-Flash-Befehl, DI-Polarität,
+  TWN4-Format/Baudrate an RS-485) – braucht Hardware.
+- Meilenstein 9: Deployment am MRX/MOROS.neo (Paket hochladen, Netz, NTP, VPN).
+
 ## 01.10.2026 – Meilenstein 6 (Webinterface: Protokoll, Einstellungen)
 
 **Fertig**

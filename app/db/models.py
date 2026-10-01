@@ -195,6 +195,8 @@ class Zuweisung(Base):
     )
     abgeholt_am: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     storniert: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Wäscheabteilung wurde an dieses Fach erinnert (nur einmal je Zuweisung)
+    erinnert_am: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     fach: Mapped[Fach] = relationship()
     mitarbeiter: Mapped[Mitarbeiter] = relationship()
@@ -244,6 +246,8 @@ class Mail(Base):
         DateTime(timezone=True), server_default=func.now()
     )
     gesendet_am: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Wiederholung mit wachsendem Abstand; NULL = sofort versuchen
+    naechster_versuch: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class Einstellung(Base):

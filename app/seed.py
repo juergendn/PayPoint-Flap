@@ -11,7 +11,16 @@ from sqlalchemy import select, text
 
 from app.config import get_settings
 from app.core.auth import passwort_hash
-from app.db.models import Automat, Benutzer, Chip, Fach, IoModul, Mitarbeiter, Rolle
+from app.db.models import (
+    Automat,
+    Benutzer,
+    Chip,
+    Einstellung,
+    Fach,
+    IoModul,
+    Mitarbeiter,
+    Rolle,
+)
 from app.db.session import SessionFactory, engine
 
 # Fachbelegung (siehe CLAUDE.md): (erstes Fach, Anzahl) je Modul.
@@ -107,6 +116,17 @@ async def main() -> None:
                         aktiv=True,
                     )
                 )
+
+        if settings.seed_testdaten:
+            # Mails gehen in der Entwicklung an Mailpit (http://localhost:8025).
+            for k, v in {
+                "smtp.host": "mailpit",
+                "smtp.port": "1025",
+                "smtp.sicherheit": "keine",
+                "smtp.absender": "klappenautomat@example.org",
+                "mail.waesche": "waesche@example.org",
+            }.items():
+                session.add(Einstellung(schluessel=k, wert=v))
 
         await session.commit()
         print(

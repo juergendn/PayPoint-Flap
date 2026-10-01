@@ -2,6 +2,7 @@
 # Start: docker compose up --build
 #   Web-App        http://localhost:8000          (Display "/", Admin "/admin")
 #   Simulator-UI   http://localhost:8081          (Türen, Module, Chips)
+#   Mailpit        http://localhost:8025          (alle versendeten Mails)
 #
 # Speichergrenzen grob wie auf dem MOROS.neo (1 GB gesamt, Rest für icom OS),
 # damit Speicherhunger früh auffällt und nicht erst am Gerät.
@@ -40,6 +41,12 @@ services:
       - ./hwsim:/srv/hwsim
     ports:
       - "8081:8080"
+
+  # Test-Mailserver: fängt alle Mails ab, nichts verlässt den Rechner.
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"
 
   app:
     build: .

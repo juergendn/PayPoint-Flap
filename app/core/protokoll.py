@@ -37,6 +37,10 @@ ARTEN = {
     "mitarbeiter_geaendert": "Mitarbeiter geändert",
     "mitarbeiter_import": "Mitarbeiter-Import",
     "einstellungen_geaendert": "Einstellungen geändert",
+    "erinnerung": "Erinnerung an Wäscheabteilung",
+    "tuer_offen_lange": "Tür steht lange offen",
+    "aufraeumen": "Aufräumen (Datenschutz)",
+    "testmail": "Testmail",
 }
 
 

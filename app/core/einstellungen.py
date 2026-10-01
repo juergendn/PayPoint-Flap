@@ -54,6 +54,14 @@ DEFINITIONEN: tuple[Definition, ...] = (
         maximum=480,
     ),
     Definition(
+        "tuer.max_offen_min",
+        "Meldung, wenn eine Tür offen steht länger als (min)",
+        "Automat",
+        standard="10",
+        minimum=1,
+        maximum=240,
+    ),
+    Definition(
         "protokoll.tage",
         "Protokoll aufbewahren (Tage)",
         "Datenschutz",

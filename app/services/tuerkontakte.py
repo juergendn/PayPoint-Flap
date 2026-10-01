@@ -10,12 +10,13 @@
 
 import asyncio
 import logging
+import time
 from collections import defaultdict
 from collections.abc import Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import faecher
+from app.core import einstellungen, faecher, mail
 from app.core.protokoll import protokollieren
 from app.drivers.lock import SchlossRegistry
 from app.modes.bekleidung.ablauf import Bekleidung
@@ -37,6 +38,9 @@ class Tuerueberwachung:
         self._intervall_s = intervall_s
         self.status: dict[int, str] = {}  # fach_id → verriegelt|offen|gestoert|ohne_io
         self._modul_ok: dict[int, bool] = {}
+        # Seit wann steht eine Tür offen (monotonic) und ob das schon gemeldet ist
+        self._offen_seit: dict[int, float] = {}
+        self._offen_gemeldet: set[int] = set()
         self._task: asyncio.Task | None = None
 
     def starten(self) -> None:
@@ -71,6 +75,54 @@ class Tuerueberwachung:
                 await self._modus.tuer_geschlossen(f.id)
         self.status = neu
         await self._modul_flanken(liste, neu)
+        await self._lange_offen(liste, neu)
+
+    async def _lange_offen(self, liste, neu: dict[int, str]) -> None:
+        """Eine Tür, die zu lange offen steht (vergessen, Nothebel, klemmt), wird
+        einmal pro Öffnung gemeldet – Protokoll und Mail an die Wäscheabteilung."""
+        jetzt = time.monotonic()
+        for f in liste:
+            if neu[f.id] == "offen":
+                self._offen_seit.setdefault(f.id, jetzt)
+            else:
+                self._offen_seit.pop(f.id, None)
+                self._offen_gemeldet.discard(f.id)
+        kandidaten = [
+            f
+            for f in liste
+            if f.id in self._offen_seit and f.id not in self._offen_gemeldet
+        ]
+        if not kandidaten:
+            return
+        async with self._session_factory() as session:
+            grenze_min = await einstellungen.lesen_int(
+                session, "tuer.max_offen_min", 10
+            )
+            faellig = [
+                f
+                for f in kandidaten
+                if jetzt - self._offen_seit[f.id] >= grenze_min * 60
+            ]
+            if not faellig:
+                return
+            empfaenger = await einstellungen.lesen(session, "mail.waesche")
+            for f in faellig:
+                self._offen_gemeldet.add(f.id)
+                log.warning(
+                    "Fach %d steht seit über %d min offen", f.nummer, grenze_min
+                )
+                protokollieren(
+                    session, "tuer_offen_lange", fach_id=f.id, minuten=grenze_min
+                )
+                if empfaenger:
+                    mail.einreihen(
+                        session,
+                        empfaenger,
+                        f"Klappenautomat: Fach {f.nummer} steht offen",
+                        f"Die Tür von Fach {f.nummer} steht seit über {grenze_min} "
+                        "Minuten offen. Bitte am Automaten nachsehen und schließen.",
+                    )
+            await session.commit()
 
     async def _modul_flanken(self, liste, neu: dict[int, str]) -> None:
         # Pro Modul statt pro Fach: ein ausgefallenes Modul ist ein Ereignis,

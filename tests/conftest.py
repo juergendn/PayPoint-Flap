@@ -57,6 +57,20 @@ async def db(datenbank):
                 " io_modul, automat, mail RESTART IDENTITY CASCADE"
             )
         )
+        # Einstellungen auf den Stand nach den Migrationen zurück – sonst wirken
+        # Werte eines Tests (z. B. SMTP) in den nächsten hinein. Der
+        # Signaturschlüssel bleibt, er ist im Prozess zwischengespeichert.
+        await session.execute(
+            text("DELETE FROM einstellung WHERE schluessel <> 'web.geheimnis'")
+        )
+        await session.execute(
+            text(
+                "INSERT INTO einstellung (schluessel, wert) VALUES"
+                " ('schloss.impuls_ms', '1500'), ('display.timeout_s', '60'),"
+                " ('web.sitzung_min', '30'), ('protokoll.tage', '60'),"
+                " ('erinnerung.tage', '5'), ('tuer.max_offen_min', '10')"
+            )
+        )
         # Wie nach der Grundeinrichtung: Protokoll braucht einen Automaten.
         from app.db.models import Automat
 

@@ -38,6 +38,36 @@
       <tr><td class="text-muted">Protokolleinträge</td><td>{{ info.ereignisse }}</td></tr>
       <tr><td class="text-muted">Ältester Eintrag</td><td>{{ info.aeltester|ortszeit }}</td></tr>
       <tr><td class="text-muted">Leser</td><td>{{ 'verbunden' if info.leser_ok else 'getrennt' }}</td></tr>
+      <tr><td class="text-muted">Mails in der Queue</td><td>{{ info.mails_offen }}</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>E-Mail testen</h3>
+    <form method="post" action="/admin/einstellungen/testmail" class="zeile">
+      <input name="empfaenger" type="email" placeholder="{{ werte['mail.waesche'] or 'Empfänger' }}" />
+      <button class="btn btn-outline-primary">Testmail senden</button>
+    </form>
+    <p class="text-muted hilfe">Leer = an die Wäscheabteilung. Gespeicherte Einstellungen werden verwendet.</p>
+    <h3 class="mt-4">Letzte Mails</h3>
+    <table>
+      <thead><tr><th>Erstellt</th><th>An</th><th>Betreff</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for m in info.mails %}
+        <tr>
+          <td class="text-muted nowrap">{{ m.erstellt_am|ortszeit }}</td>
+          <td>{{ m.empfaenger }}</td>
+          <td>{{ m.betreff }}</td>
+          <td>
+            {% if m.status == 'gesendet' %}<span class="badge badge-success">gesendet</span>
+            {% elif m.status == 'fehler' %}<span class="badge badge-error" title="{{ m.letzter_fehler or '' }}">aufgegeben</span>
+            {% else %}<span class="badge badge-warning" title="{{ m.letzter_fehler or '' }}">wartet{% if m.versuche %} ({{ m.versuche }}×){% endif %}</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-muted">Noch keine Mails</td></tr>
+        {% endfor %}
+      </tbody>
     </table>
   </div>
 </div>

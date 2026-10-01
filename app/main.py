@@ -15,6 +15,7 @@ from app.db.session import SessionFactory, engine
 from app.drivers import reader
 from app.drivers.lock import SchlossRegistry
 from app.modes.bekleidung.ablauf import Bekleidung
+from app.services.hintergrund import Hintergrund
 from app.services.leser import LeserDienst
 from app.services.tuerkontakte import Tuerueberwachung
 from app.web import auth as web_auth
@@ -53,15 +54,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         return await display_sitzungen.chip_meldung(await modus.chip(kennung))
 
     leser_dienst = LeserDienst(reader.erzeuge(settings), chip_verarbeiten)
+    hintergrund = Hintergrund(SessionFactory)
     ueberwachung.starten()
     leser_dienst.starten()
+    hintergrund.starten()
 
     app.state.schloesser = schloesser
     app.state.modus = modus
     app.state.ueberwachung = ueberwachung
     app.state.leser_dienst = leser_dienst
     app.state.display = display_sitzungen
+    app.state.hintergrund = hintergrund
     yield
+    await hintergrund.stoppen()
     await leser_dienst.stoppen()
     await ueberwachung.stoppen()
     await schloesser.schliessen()

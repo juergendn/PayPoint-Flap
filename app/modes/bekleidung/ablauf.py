@@ -22,10 +22,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.config import get_settings
+from app.core import mail
 from app.core.faecher import Oeffnungsfehler, schloss_oeffnen
 from app.core.mitarbeiter import kennung_normalisieren
 from app.core.protokoll import protokollieren
-from app.db.models import Benutzer, Chip, Fach, Mail, Mitarbeiter, Rolle, Zuweisung
+from app.db.models import Benutzer, Chip, Fach, Mitarbeiter, Rolle, Zuweisung
 from app.drivers.lock import SchlossRegistry
 
 log = logging.getLogger(__name__)
@@ -296,19 +297,14 @@ class Bekleidung:
         # Nur in die Queue – versendet wird vom Maildienst (auch ohne 4G kein Fehler).
         if not ma.email:
             return
-        session.add(
-            Mail(
-                empfaenger=ma.email,
-                betreff=f"Deine Kleidung liegt in Fach {fach.nummer}",
-                text=(
-                    f"Hallo {ma.name},\n\n"
-                    f"deine Kleidung liegt im Klappenautomaten in Fach {fach.nummer} "
-                    "für dich bereit. Halte deinen Chip an den Leser, das Fach "
-                    "öffnet sich dann.\n\nDeine Wäscheabteilung"
-                ),
-                status="offen",
-                versuche=0,
-            )
+        mail.einreihen(
+            session,
+            ma.email,
+            f"Deine Kleidung liegt in Fach {fach.nummer}",
+            f"Hallo {ma.name},\n\n"
+            f"deine Kleidung liegt im Klappenautomaten in Fach {fach.nummer} "
+            "für dich bereit. Halte deinen Chip an den Leser, das Fach "
+            "öffnet sich dann.\n\nDeine Wäscheabteilung",
         )
 
     # ---------- Chip am Leser ----------
