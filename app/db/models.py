@@ -26,7 +26,9 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-FACH_ZUSTAENDE = ("frei", "belegt", "gestoert")
+# befuellung/entnahme: Tür ist offen, der Wechsel auf belegt/frei passiert erst,
+# wenn der Türkontakt „zu“ meldet (Entscheidung 01.10.2026).
+FACH_ZUSTAENDE = ("frei", "befuellung", "belegt", "entnahme", "gestoert")
 MODI = ("bekleidung", "werkzeug")
 
 
@@ -193,6 +195,9 @@ class Zuweisung(Base):
     )
     abgeholt_am: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     storniert: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    fach: Mapped[Fach] = relationship()
+    mitarbeiter: Mapped[Mitarbeiter] = relationship()
 
 
 class Ereignis(Base):

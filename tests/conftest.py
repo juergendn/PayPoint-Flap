@@ -15,6 +15,8 @@ _BASIS_URL = os.environ.get(
 )
 TEST_URL = _BASIS_URL.rsplit("/", 1)[0] + "/mvt_test"
 os.environ["MVT_DATABASE_URL"] = TEST_URL
+# Lifespan im Test ohne serielle Schnittstelle
+os.environ["MVT_LESER_TREIBER"] = "simulator"
 
 import asyncpg  # noqa: E402
 import httpx  # noqa: E402
@@ -65,14 +67,15 @@ async def db(datenbank):
 
 @pytest.fixture
 async def client(db):
-    """HTTP-Client gegen die App, ohne Lifespan (keine Hardware nötig)."""
+    """HTTP-Client gegen die App mit echtem Lifespan (Leser = Simulator)."""
     from app.main import app
 
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(
-        transport=transport, base_url="http://test", follow_redirects=False
-    ) as c:
-        yield c
+    async with app.router.lifespan_context(app):
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://test", follow_redirects=False
+        ) as c:
+            yield c
 
 
 @pytest.fixture

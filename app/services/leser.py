@@ -1,49 +1,53 @@
-"""Hintergrunddienst Leser: liest Chips, protokolliert und verteilt sie live (SSE).
+"""Hintergrunddienst Leser: liest Chips, gibt sie an den Modus und verteilt die
+Antwort live ans Display (SSE).
 
-Fachliche Reaktion (Fach öffnen, Anlernen …) hängt sich später als Modus-Logik
-hier an; der Dienst selbst kennt nur „Chip gesehen“.
+Was ein Chip bedeutet (Abholen, Anlernen, Menü …), entscheidet der Modus; der
+Dienst kennt nur „Chip gesehen“ und entprellt.
 """
 
 import asyncio
 import logging
 import time
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Any
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
-
-from app.core.protokoll import protokollieren
-from app.db.models import Chip
 from app.drivers.reader.base import ReaderDriver
 
 log = logging.getLogger(__name__)
+
+Meldung = dict[str, Any]
 
 
 class LeserDienst:
     def __init__(
         self,
         leser: ReaderDriver,
-        session_factory: Callable[[], AsyncSession],
+        verarbeiten: Callable[[str], Awaitable[Meldung]],
         entprell_s: float = 2.0,
     ) -> None:
         self.leser = leser
-        self._session_factory = session_factory
+        self._verarbeiten = verarbeiten
         # Der Leser meldet einen liegen gelassenen Chip mehrfach – das ist kein
-        # neuer Vorgang.
+        # neuer Vorgang (sonst öffnete ein Fach direkt ein zweites Mal).
         self._entprell_s = entprell_s
         self._letzter: tuple[str, float] = ("", 0.0)
-        self._abonnenten: set[asyncio.Queue[dict[str, Any]]] = set()
+        self._abonnenten: set[asyncio.Queue[Meldung]] = set()
         self._task: asyncio.Task | None = None
 
-    def abonnieren(self) -> asyncio.Queue[dict[str, Any]]:
-        q: asyncio.Queue[dict[str, Any]] = asyncio.Queue(maxsize=10)
+    def abonnieren(self) -> asyncio.Queue[Meldung]:
+        q: asyncio.Queue[Meldung] = asyncio.Queue(maxsize=10)
         self._abonnenten.add(q)
         return q
 
-    def abbestellen(self, q: asyncio.Queue[dict[str, Any]]) -> None:
+    def abbestellen(self, q: asyncio.Queue[Meldung]) -> None:
         self._abonnenten.discard(q)
+
+    def senden(self, meldung: Meldung) -> None:
+        for q in list(self._abonnenten):
+            try:
+                q.put_nowait(meldung)
+            except asyncio.QueueFull:
+                pass  # langsamer Browser – verpasst eben eine Anzeige
 
     def starten(self) -> None:
         self._task = asyncio.create_task(self._lauf(), name="leser")
@@ -60,7 +64,7 @@ class LeserDienst:
         while True:
             try:
                 async for kennung in self.leser.chips():
-                    await self._chip(kennung)
+                    await self.chip(kennung)
             except asyncio.CancelledError:
                 raise
             except Exception:
@@ -68,39 +72,16 @@ class LeserDienst:
                 log.exception("Leserdienst abgestürzt, Neustart in 2 s")
                 await asyncio.sleep(2)
 
-    async def _chip(self, kennung: str) -> None:
+    async def chip(self, kennung: str) -> Meldung | None:
         jetzt = time.monotonic()
         if kennung == self._letzter[0] and jetzt - self._letzter[1] < self._entprell_s:
-            return
+            return None
         self._letzter = (kennung, jetzt)
-
-        async with self._session_factory() as session:
-            chip = await session.scalar(
-                select(Chip)
-                .where(Chip.kennung == kennung)
-                .options(selectinload(Chip.mitarbeiter))
-            )
-            mitarbeiter = chip.mitarbeiter if chip and chip.aktiv else None
-            if mitarbeiter and not mitarbeiter.aktiv:
-                mitarbeiter = None
-            protokollieren(
-                session,
-                "chip_gelesen",
-                chip_id=chip.id if chip else None,
-                mitarbeiter_id=mitarbeiter.id if mitarbeiter else None,
-                kennung=kennung,
-                bekannt=chip is not None,
-            )
-            await session.commit()
-
-        meldung = {
-            "kennung": kennung,
-            "bekannt": chip is not None,
-            "name": mitarbeiter.name if mitarbeiter else None,
-        }
-        log.info("Chip %s (%s)", kennung, meldung["name"] or "unbekannt")
-        for q in list(self._abonnenten):
-            try:
-                q.put_nowait(meldung)
-            except asyncio.QueueFull:
-                pass  # langsamer Browser – verpasst eben eine Anzeige
+        try:
+            meldung = await self._verarbeiten(kennung)
+        except Exception:
+            log.exception("Chip %s: Verarbeitung fehlgeschlagen", kennung)
+            meldung = {"art": "fehler", "text": "Interner Fehler"}
+        log.info("Chip %s → %s", kennung, meldung.get("art"))
+        self.senden(meldung)
+        return meldung

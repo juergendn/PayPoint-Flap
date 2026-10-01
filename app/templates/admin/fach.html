@@ -1,0 +1,82 @@
+{% extends "admin/layout.html" %}
+{% block seitentitel %}Fach {{ fach.nummer }}{% endblock %}
+{% block inhalt %}
+<div class="dashboard-grid">
+  <div class="card">
+    <h3>Zustand</h3>
+    <table>
+      <tr><td class="text-muted">Zustand</td><td>{{ zustand_text[fach.zustand] }}</td></tr>
+      <tr><td class="text-muted">Schloss</td><td>
+        {% if schloss == 'verriegelt' %}🔒 zu{% elif schloss == 'offen' %}🔓 offen{% elif schloss == 'gestoert' %}⚠️ Modul antwortet nicht{% else %}–{% endif %}
+      </td></tr>
+      <tr><td class="text-muted">Gesperrt</td><td>{{ 'ja' if fach.gesperrt else 'nein' }}</td></tr>
+      <tr><td class="text-muted">IO</td><td>{{ fach.io_modul.name if fach.io_modul else '–' }} · Kanal {{ fach.kanal or '–' }}</td></tr>
+      {% if zuweisung %}
+      <tr><td class="text-muted">Für</td><td><strong>{{ zuweisung.mitarbeiter.name }}</strong> ({{ zuweisung.mitarbeiter.personalnummer }})</td></tr>
+      <tr><td class="text-muted">Seit</td><td>{{ zuweisung.befuellt_am.astimezone().strftime('%d.%m.%Y %H:%M') }}</td></tr>
+      {% endif %}
+    </table>
+    <div class="aktionen">
+      <a class="btn btn-secondary" href="/admin">Zurück</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Aktionen</h3>
+    {% if fach.zustand == 'frei' and not fach.gesperrt and 'fach_befuellen' in rechte %}
+    <form method="post" action="/admin/fach/{{ fach.id }}/befuellen" class="form-group">
+      <label for="mitarbeiter_id">Befüllen für</label>
+      <div class="zeile">
+        <select id="mitarbeiter_id" name="mitarbeiter_id" required>
+          <option value="">– Mitarbeiter wählen –</option>
+          {% for m in kandidaten %}<option value="{{ m.id }}">{{ m.name }} ({{ m.personalnummer }})</option>{% endfor %}
+        </select>
+        <button class="btn btn-primary">Öffnen &amp; zuweisen</button>
+      </div>
+    </form>
+    {% endif %}
+    {% if zuweisung and 'zuweisung_stornieren' in rechte %}
+    <form method="post" action="/admin/fach/{{ fach.id }}/stornieren" class="form-group"
+          onsubmit="return confirm('Zuweisung für {{ zuweisung.mitarbeiter.name }} stornieren? Das Fach öffnet sich zum Ausräumen.')">
+      <button class="btn btn-outline-danger">Zuweisung stornieren</button>
+    </form>
+    {% endif %}
+    <div class="zeile">
+      {% if 'fach_oeffnen' in rechte %}
+      <form method="post" action="/admin/fach/{{ fach.id }}/oeffnen" class="inline">
+        <button class="btn btn-outline-primary">Öffnen (ohne Zustandswechsel)</button>
+      </form>
+      {% endif %}
+      {% if 'fach_sperren' in rechte %}
+      <form method="post" action="/admin/fach/{{ fach.id }}/sperren" class="inline">
+        <input type="hidden" name="gesperrt" value="{{ 'false' if fach.gesperrt else 'true' }}" />
+        <button class="btn btn-outline-warning">{{ 'Entsperren' if fach.gesperrt else 'Sperren' }}</button>
+      </form>
+      {% if fach.zustand == 'gestoert' %}
+      <form method="post" action="/admin/fach/{{ fach.id }}/quittieren" class="inline">
+        <button class="btn btn-outline-success">Störung quittieren</button>
+      </form>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Letzte Ereignisse</h3>
+  <table>
+    <thead><tr><th>Zeit</th><th>Ereignis</th><th>Details</th></tr></thead>
+    <tbody>
+      {% for e in ereignisse %}
+      <tr>
+        <td class="text-muted">{{ e.zeitpunkt.astimezone().strftime('%d.%m. %H:%M:%S') }}</td>
+        <td>{{ e.art }}</td>
+        <td class="text-muted">{{ e.details or '' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3" class="text-muted">Keine Ereignisse</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

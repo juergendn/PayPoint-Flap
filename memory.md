@@ -2,6 +2,34 @@
 
 Kurzprotokoll für die nächste Sitzung. Neueste Einträge oben.
 
+## 01.10.2026 – Meilenstein 4 (Modus bekleidung)
+
+**Entschieden:** Fach ist erst frei, wenn die Tür nach der Abholung **wieder zu** ist.
+
+**Fertig**
+- Zustände `frei → befuellung → belegt → entnahme → frei` (+ `gestoert`, Flag
+  `gesperrt`), Migration 0003. Übergänge nach `belegt`/`frei` nur per Türkontakt.
+- `app/modes/bekleidung/ablauf.py` (`Bekleidung`): befuellen (Fach wählbar oder
+  niedrigstes freies), stornieren (öffnet zum Ausräumen), abholen per Chip,
+  oeffnen_manuell (kein Zustandswechsel), sperren, stoerung_quittieren, Anlernen
+  (nächster unbekannter Chip, 60 s, optional direkt für einen Mitarbeiter).
+  Alle Abläufe seriell über eine asyncio-Sperre.
+- Öffnen prüft die Rückmeldung: Schloss nach Impuls noch zu → `gestoert`
+  (mechanisch, manuell quittieren). Modul nicht erreichbar → nur Fehlermeldung, kein
+  Zustandswechsel, Live-Anzeige „Störung“.
+- `services/tuerkontakte.py`: Zyklus 1 s, Statuscache für die Übersicht,
+  Protokoll nur bei Modul-Ausfall/-Rückkehr.
+- Mail „Deine Kleidung liegt in Fach X“ beim Wechsel auf belegt (nur Queue).
+- Chip-Reaktion: abholung | kein_fach | noch_nicht_bereit | fach_gesperrt | menue
+  (Wäsche/Admin, mit eigenem Fach) | angelernt | unbekannt | nicht_zugeordnet |
+  gesperrt. Display zeigt sie vorläufig als Text.
+- Web: Fach-Detailseite mit allen Aktionen + letzte Ereignisse; Anlernen auf der
+  Chip-Seite. 39 Tests, Live-Durchlauf mit hwsim, Migration im Container geprüft.
+
+**Nächste Schritte**
+- Meilenstein 5: Display (Kiosk) – Menü Wäsche nach Chip (Befüllen mit Suche/
+  Ziffernblock, Stornieren, Anlernen, eigenes Fach), Timeout 60 s.
+
 ## 01.10.2026 – Meilenstein 3 (Login, Rollen, Mitarbeiter, Chips)
 
 **Fertig**

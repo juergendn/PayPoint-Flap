@@ -9,7 +9,6 @@ from sqlalchemy.orm import selectinload
 
 from app.config import get_settings
 from app.core import einstellungen
-from app.core.protokoll import protokollieren
 from app.db.models import Fach
 from app.drivers.fehler import HardwareFehler
 from app.drivers.lock import SchlossRegistry
@@ -18,6 +17,15 @@ log = logging.getLogger(__name__)
 
 # Kerong verlangt ≥ 1000 ms; 1500 ms gibt Reserve bei Spannungsabfall.
 IMPULS_MS_STANDARD = 1500
+
+
+class Oeffnungsfehler(Exception):
+    """Fach ließ sich nicht öffnen. `grund`: 'kommunikation' (Modul antwortet
+    nicht) oder 'mechanik' (Impuls kam an, Schloss meldet trotzdem zu)."""
+
+    def __init__(self, grund: str, text: str) -> None:
+        super().__init__(text)
+        self.grund = grund
 
 
 async def alle(session: AsyncSession) -> list[Fach]:
@@ -37,7 +45,7 @@ async def schloss_status(registry: SchlossRegistry, fach: Fach) -> str:
     try:
         treiber = registry.fuer_modul(fach.io_modul_id)
         return "verriegelt" if await treiber.is_locked(fach.kanal) else "offen"
-    except HardwareFehler as e:
+    except (HardwareFehler, KeyError) as e:
         log.debug("Fach %d: %s", fach.nummer, e)
         return "gestoert"
 
@@ -49,39 +57,27 @@ async def schloss_status_alle(
     return {f.id: w for f, w in zip(faecher, werte)}
 
 
-async def oeffnen(
-    session: AsyncSession,
-    registry: SchlossRegistry,
-    fach: Fach,
-    quelle: str,
-    benutzer_id: int | None = None,
-) -> bool:
-    """Öffnet das Fach und protokolliert das Ergebnis. True bei Erfolg."""
+async def schloss_oeffnen(
+    session: AsyncSession, registry: SchlossRegistry, fach: Fach
+) -> None:
+    """Impuls geben und prüfen, dass die Tür wirklich offen ist.
+
+    Erst die Rückmeldung zählt: Ohne sie würde ein klemmendes Schloss als
+    „geöffnet“ gelten, und der Türkontakt meldete gleich wieder „zu“ – das Fach
+    wechselte dann ungesehen den Zustand.
+    """
     if fach.io_modul_id is None or fach.kanal is None:
-        raise ValueError(f"Fach {fach.nummer} hat kein Schloss")
+        raise Oeffnungsfehler("mechanik", f"Fach {fach.nummer} hat kein Schloss")
     dauer_ms = await einstellungen.lesen_int(
         session, "schloss.impuls_ms", IMPULS_MS_STANDARD
     )
     try:
-        await registry.fuer_modul(fach.io_modul_id).open(fach.kanal, dauer_ms)
-    except HardwareFehler as e:
-        log.error("Fach %d öffnen fehlgeschlagen: %s", fach.nummer, e)
-        protokollieren(
-            session,
-            "stoerung",
-            fach_id=fach.id,
-            benutzer_id=benutzer_id,
-            quelle=quelle,
-            fehler=str(e),
+        treiber = registry.fuer_modul(fach.io_modul_id)
+        await treiber.open(fach.kanal, dauer_ms)
+        noch_zu = await treiber.is_locked(fach.kanal)
+    except (HardwareFehler, KeyError) as e:
+        raise Oeffnungsfehler("kommunikation", f"Fach {fach.nummer}: {e}") from e
+    if noch_zu:
+        raise Oeffnungsfehler(
+            "mechanik", f"Fach {fach.nummer}: Schloss meldet nach Impuls weiter zu"
         )
-        await session.commit()
-        return False
-    protokollieren(
-        session,
-        "fach_geoeffnet",
-        fach_id=fach.id,
-        benutzer_id=benutzer_id,
-        quelle=quelle,
-    )
-    await session.commit()
-    return True

@@ -19,15 +19,20 @@ def seite(request: Request, vorlage: str, status_code: int = 200, **kontext: Any
     kontext.setdefault("kopf", getattr(request.state, "kopf", None))
     kontext.setdefault("rechte", getattr(request.state, "rechte", set()))
     kontext.setdefault("hinweis", request.query_params.get("hinweis"))
+    kontext.setdefault("fehler", request.query_params.get("fehler"))
     return templates.TemplateResponse(
         request, vorlage, kontext, status_code=status_code
     )
 
 
-def weiter(url: str, hinweis: str | None = None) -> RedirectResponse:
-    """Nach erfolgreichem POST umleiten (kein doppeltes Absenden per F5)."""
-    if hinweis:
-        url += ("&" if "?" in url else "?") + "hinweis=" + quote(hinweis)
+def weiter(
+    url: str, hinweis: str | None = None, fehler: str | None = None
+) -> RedirectResponse:
+    """Nach einem POST umleiten (kein doppeltes Absenden per F5); Meldung als
+    Query-Parameter, die Seite zeigt sie an."""
+    for name, text in (("hinweis", hinweis), ("fehler", fehler)):
+        if text:
+            url += ("&" if "?" in url else "?") + name + "=" + quote(text)
     return RedirectResponse(url, status_code=303)
 
 

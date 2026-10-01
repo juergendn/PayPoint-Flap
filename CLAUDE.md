@@ -197,8 +197,14 @@ Unique-Index).
 
 ### Fachzustände (Modus bekleidung)
 
-`frei` → (Befüllen + Tür zu bestätigt) → `belegt` → (Chip-Scan + Türkontakt meldet offen)
-→ `frei`. Zusätzlich `gesperrt` (manuell) und `gestört` (Modul/Schloss antwortet nicht).
+```
+frei ──Befüllen (Tür öffnet)──▶ befuellung ──Tür zu──▶ belegt
+belegt ──Chip-Scan (Tür öffnet)──▶ entnahme ──Tür zu──▶ frei
+belegt/befuellung ──Stornieren (Tür öffnet)──▶ entnahme
+```
+Entschieden: Fach ist erst frei, wenn die Tür **wieder zu** ist. Zusätzlich `gesperrt`
+(manuell, unabhängig vom Zustand) und `gestoert` (Schloss hat nicht geöffnet; manuell
+quittieren). Modul nicht erreichbar = nur Live-Anzeige „Störung“, kein DB-Zustand.
 
 ### Feste Vorgaben
 
@@ -250,6 +256,5 @@ Unique-Index).
 - [ ] SMTP-Zugang, Absender, Empfängeradresse Wäscheabteilung, Frist X (Vorschlag 5 Tage)
 - [ ] Datenschutz: Protokollfrist 60 Tage mit DSB des Kunden abstimmen
 - [ ] Mitarbeiterdaten: CSV oder Schnittstelle zum Personalsystem
-- [ ] Fach frei bei Tür **auf** oder erst bei Tür **wieder zu**?
 - [ ] Uhrzeit: Router braucht NTP vor Inbetriebnahme (Container nutzt Router-Uhr)
 - [ ] Webinterface per VPN erreichbar machen (Container-IP hinter dem Router, NAT?)

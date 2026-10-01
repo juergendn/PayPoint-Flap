@@ -523,3 +523,41 @@ td a {
   top: 16px;
   right: 16px;
 }
+
+/* ---------- Fachzustände (Modus bekleidung) ---------- */
+
+a.fach-nummer {
+  color: var(--text);
+  text-decoration: none;
+  display: block;
+}
+a.fach-nummer:hover {
+  color: var(--accent-text);
+}
+.fach-zustand {
+  font-size: 0.85rem;
+}
+.fach-name {
+  font-size: 0.8rem;
+  min-height: 1.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zustand-belegt {
+  border-color: var(--accent);
+  background-color: rgba(31, 111, 235, 0.08);
+}
+.zustand-befuellung,
+.zustand-entnahme {
+  border-color: var(--warning);
+}
+.zustand-gestoert,
+.fach-gesperrt {
+  border-color: var(--error);
+}
+.kiosk-chip.info {
+  background: rgba(31, 111, 235, 0.15);
+  border: 1px solid var(--accent);
+  color: var(--accent-text);
+}

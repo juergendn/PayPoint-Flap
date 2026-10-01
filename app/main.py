@@ -14,7 +14,9 @@ from app.db.models import IoModul
 from app.db.session import SessionFactory, engine
 from app.drivers import reader
 from app.drivers.lock import SchlossRegistry
+from app.modes.bekleidung.ablauf import Bekleidung
 from app.services.leser import LeserDienst
+from app.services.tuerkontakte import Tuerueberwachung
 from app.web import auth as web_auth
 from app.web.admin import anmeldung, benutzer, chips, mitarbeiter
 from app.web.admin import routes as admin
@@ -35,13 +37,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         )
         schloesser.laden(list(module))
 
-    leser_dienst = LeserDienst(reader.erzeuge(settings), SessionFactory)
+    modus = Bekleidung(schloesser, SessionFactory)
+    ueberwachung = Tuerueberwachung(schloesser, SessionFactory, modus)
+    leser_dienst = LeserDienst(reader.erzeuge(settings), modus.chip)
+    ueberwachung.starten()
     leser_dienst.starten()
 
     app.state.schloesser = schloesser
+    app.state.modus = modus
+    app.state.ueberwachung = ueberwachung
     app.state.leser_dienst = leser_dienst
     yield
     await leser_dienst.stoppen()
+    await ueberwachung.stoppen()
     await schloesser.schliessen()
     await engine.dispose()
 

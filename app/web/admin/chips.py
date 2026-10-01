@@ -20,6 +20,7 @@ from app.web.auth import recht
 
 router = APIRouter()
 Berechtigt = Annotated[Benutzer, Depends(recht("chip_verknuepfen"))]
+Anlernen = Annotated[Benutzer, Depends(recht("chip_anlernen"))]
 
 
 @router.get("/chips", response_class=HTMLResponse)
@@ -52,11 +53,31 @@ async def liste(
         mitarbeiter=mitarbeiter,
         filter=filter,
         q=q,
+        anlernen=request.app.state.modus.anlernen,
     )
 
 
 def _mitarbeiter_id(text: str) -> int | None:
     return int(text) if text.strip().isdigit() else None
+
+
+@router.post("/chips/anlernen")
+async def anlernen_starten(
+    request: Request,
+    benutzer: Anlernen,
+    mitarbeiter_id: Annotated[str, Form()] = "",
+):
+    """Der nächste unbekannte Chip am Leser wird erfasst (60 s)."""
+    request.app.state.modus.anlernen_starten(
+        benutzer.id, _mitarbeiter_id(mitarbeiter_id)
+    )
+    return weiter("/admin/chips", "Anlernen aktiv – Chip jetzt an den Leser halten")
+
+
+@router.post("/chips/anlernen/stop")
+async def anlernen_stoppen(request: Request, _: Anlernen):
+    request.app.state.modus.anlernen_beenden()
+    return weiter("/admin/chips", "Anlernen beendet")
 
 
 @router.post("/chips")

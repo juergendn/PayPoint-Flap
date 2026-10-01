@@ -1,6 +1,29 @@
 {% extends "admin/layout.html" %}
 {% block seitentitel %}Chips{% endblock %}
 {% block inhalt %}
+{% if 'chip_anlernen' in rechte %}
+<div class="card">
+  <h3>Anlernen am Automaten</h3>
+  {% if anlernen.aktiv %}
+  <div class="alert alert-success">
+    Anlernen aktiv (noch {{ anlernen.rest_s }} s) – den neuen Chip jetzt an den Leser halten.
+  </div>
+  <form method="post" action="/admin/chips/anlernen/stop" class="inline">
+    <button class="btn btn-secondary">Abbrechen</button>
+  </form>
+  <a class="btn btn-secondary" href="/admin/chips">Aktualisieren</a>
+  {% else %}
+  <p class="text-muted">Der nächste unbekannte Chip am Leser wird erfasst (60 s) – wahlweise gleich für einen Mitarbeiter.</p>
+  <form method="post" action="/admin/chips/anlernen" class="zeile">
+    <select name="mitarbeiter_id">
+      <option value="">– ohne Zuordnung –</option>
+      {% for m in mitarbeiter %}<option value="{{ m.id }}">{{ m.name }} ({{ m.personalnummer }})</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary">Anlernen starten</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
 <div class="card">
   <div class="werkzeugleiste">
     <form method="get" class="suche">
